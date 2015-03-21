@@ -35,8 +35,9 @@
 Thread::Thread(char* threadName)
 {
 	int i;
+	for (i = 0; i < 10; i++) printf("%d ", !!(int)mask[i]); puts("");
 	for (i = 0; i < 128; i++) if (!mask[i]) {
-		mask[i] = 1;
+		mask[i] = this;
 		break;
 	}
 	threadId = i;
@@ -65,6 +66,7 @@ Thread::~Thread()
 {
     DEBUG('t', "Deleting thread \"%s\"\n", name);
 
+	mask[threadId] = NULL;
     ASSERT(this != currentThread);
     if (stack != NULL)
 	DeallocBoundedArray((char *) stack, StackSize * sizeof(int));

@@ -29,6 +29,8 @@ extern Interrupt *interrupt;			// interrupt status
 extern Statistics *stats;			// performance metrics
 extern Timer *timer;				// the hardware alarm clock
 
+extern Thread* mask[128];
+
 #ifdef USER_PROGRAM
 #include "machine.h"
 extern Machine* machine;	// user program memory and registers
@@ -49,4 +51,5 @@ extern SynchDisk   *synchDisk;
 extern PostOffice* postOffice;
 #endif
 
+extern void Ts(void);
 #endif // SYSTEM_H

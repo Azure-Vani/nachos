@@ -56,8 +56,6 @@
 #define StackSize	(4 * 1024)	// in words
 
 
-int mask[128];
-
 // Thread state
 enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED };
 
@@ -105,13 +103,13 @@ class Thread {
 						// overflowed its stack
     void setStatus(ThreadStatus st) { status = st; }
     char* getName() { return (name); }
-    void Print() { printf("%s, ", name); }
+    void Print() { printf("thread id:%d, name: %s\n", threadId, name); }
 
 	void setUserId(int id) { userId = id; }
 	int getUserId(void) { return userId; }
 
 	void setThreadId(int id) { threadId = id; }
-	int getThreadId(int id) { return threadId; }
+	int getThreadId(void) { return threadId; }
   private:
     // some of the private data for this class is listed above
     

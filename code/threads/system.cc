@@ -19,6 +19,8 @@ Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
 					// for invoking context switches
 
+Thread* mask[128];
+
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
 #endif
@@ -193,5 +195,12 @@ Cleanup()
     delete interrupt;
     
     Exit(0);
+}
+
+// Display all threads
+void Ts(void) {
+	for (int i = 0; i < 128; i++) if (mask[i]) {
+		mask[i]->Print();
+	}
 }
 
