@@ -49,6 +49,8 @@ ThreadTest1()
     Thread *t1 = new Thread("forked thread");
     Thread *t2 = new Thread("forked thread");
 
+	t1->setPriority(1);
+	t2->setPriority(2);
     t1->Fork(SimpleThread, t1->getThreadId());
 	t2->Fork(SimpleThread, t2->getThreadId());
     SimpleThread(0);

@@ -83,6 +83,7 @@ class Thread {
 	int userId;
 	int threadId;
 
+	int priority; // 0 as default
   public:
     Thread(char* debugName);		// initialize a Thread 
     ~Thread(); 				// deallocate a Thread
@@ -110,6 +111,9 @@ class Thread {
 
 	void setThreadId(int id) { threadId = id; }
 	int getThreadId(void) { return threadId; }
+
+	void setPriority(int p) { priority = p; }
+	int getPriority(void) { return priority; }
   private:
     // some of the private data for this class is listed above
     
