@@ -29,9 +29,10 @@ SimpleThread(int which)
 {
     int num;
     
-    for (num = 0; num < 5; num++) {
-	printf("*** thread %d (id: %d) looped %d times\n", which, currentThread->getThreadId(), num);
-        currentThread->Yield();
+    for (num = 0; num < 40; num++) {
+		interrupt->OneTick();
+		printf("*** thread %d (id: %d) looped %d times\n", which, currentThread->getThreadId(), num);
+//        currentThread->Yield();
     }
 }
 

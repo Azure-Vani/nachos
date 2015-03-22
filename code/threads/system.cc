@@ -62,8 +62,12 @@ extern void Cleanup();
 static void
 TimerInterruptHandler(int dummy)
 {
-    if (interrupt->getStatus() != IdleMode)
-	interrupt->YieldOnReturn();
+	currentThread->incTime();
+	if (currentThread->shouldSwitch()) {
+		interrupt->YieldOnReturn();
+		currentThread->resetTime(0);
+		printf("%d Should switch\n", currentThread->getThreadId());
+	}
 }
 
 //----------------------------------------------------------------------
@@ -135,8 +139,8 @@ Initialize(int argc, char **argv)
     stats = new Statistics();			// collect statistics
     interrupt = new Interrupt;			// start up interrupt handling
     scheduler = new Scheduler();		// initialize the ready queue
-    if (randomYield)				// start the timer (if needed)
-	timer = new Timer(TimerInterruptHandler, 0, randomYield);
+
+	timer = new Timer(TimerInterruptHandler, 0, false);
 
     threadToBeDestroyed = NULL;
 

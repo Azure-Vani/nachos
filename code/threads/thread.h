@@ -83,6 +83,10 @@ class Thread {
 	int userId;
 	int threadId;
 
+	int usedTime;
+
+	const int MAXTIME = 10;
+
   public:
     Thread(char* debugName);		// initialize a Thread 
     ~Thread(); 				// deallocate a Thread
@@ -110,6 +114,13 @@ class Thread {
 
 	void setThreadId(int id) { threadId = id; }
 	int getThreadId(void) { return threadId; }
+
+	void incTime(void) { usedTime++; }
+	bool shouldSwitch(void) {
+		return usedTime >= MAXTIME;
+	}
+
+	void resetTime(int u) { usedTime = u; }
   private:
     // some of the private data for this class is listed above
     

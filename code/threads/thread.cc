@@ -40,6 +40,7 @@ Thread::Thread(char* threadName)
 		mask[i] = this;
 		break;
 	}
+	usedTime = 0;
 	threadId = i;
     name = threadName;
     stackTop = NULL;
