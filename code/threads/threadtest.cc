@@ -11,29 +11,59 @@
 
 #include "copyright.h"
 #include "system.h"
+#include "synch.h"
 
 // testnum is set in main.cc
 int testnum = 1;
 
-//----------------------------------------------------------------------
-// SimpleThread
-// 	Loop 5 times, yielding the CPU to another ready thread 
-//	each iteration.
-//
-//	"which" is simply a number identifying the thread, for debugging
-//	purposes.
-//----------------------------------------------------------------------
+// For test condition variable
+Lock *mutex;
+Condition *condc, *condp;
+int buffer;
 
-void
-SimpleThread(int which)
-{
-    int num;
-    
-    for (num = 0; num < 40; num++) {
-		interrupt->OneTick();
-		printf("*** thread %d (id: %d) looped %d times\n", which, currentThread->getThreadId(), num);
-//        currentThread->Yield();
-    }
+void ProducerCond(int id) {
+	for (int i = 1; i <= 10; i++) {
+		mutex->Acquire();
+		while (buffer == 1) condp->Wait(mutex);
+		buffer = 1;
+		printf("[%d] Produce an item\n", i);
+		condc->Signal(mutex);
+		mutex->Release();
+	}
+}
+
+void ConsumerCond(int id) {
+	for (int i = 1; i <= 10; i++) {
+		mutex->Acquire();
+		while (buffer == 0) condc->Wait(mutex);
+		buffer = 0;
+		printf("[%d] Consume an item\n", i);
+		condp->Signal(mutex);
+		mutex->Release();
+	}
+}
+
+// For test semaphore
+Semaphore *slots, *items;
+
+void ProducerSema(int id) {
+	for (int i = 1; i <= 25; i++) {
+		slots->P();
+		mutex->Acquire();
+		printf("[%d] Producer an item\n", i);
+		mutex->Release();
+		items->V();
+	}
+}
+
+void ConsumerSema(int id) {
+	for (int i = 1; i <= 25; i++) {
+		items->P();
+		mutex->Acquire();
+		printf("[%d] Consume an item\n", i);
+		mutex->Release();
+		slots->V();
+	}
 }
 
 //----------------------------------------------------------------------
@@ -50,9 +80,15 @@ ThreadTest1()
     Thread *t1 = new Thread("forked thread");
     Thread *t2 = new Thread("forked thread");
 
-    t1->Fork(SimpleThread, t1->getThreadId());
-	t2->Fork(SimpleThread, t2->getThreadId());
-    SimpleThread(0);
+	mutex = new Lock("mutex");
+	condc = new Condition("condc");
+	condp = new Condition("condp");
+
+	slots = new Semaphore("slots", 5);
+	items = new Semaphore("items", 0);
+
+    t1->Fork(ProducerSema, t1->getThreadId());
+	t2->Fork(ConsumerSema, t2->getThreadId());
 }
 
 //----------------------------------------------------------------------

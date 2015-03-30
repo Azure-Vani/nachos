@@ -35,7 +35,6 @@
 Thread::Thread(char* threadName)
 {
 	int i;
-	for (i = 0; i < 10; i++) printf("%d ", !!(int)mask[i]); puts("");
 	for (i = 0; i < 128; i++) if (!mask[i]) {
 		mask[i] = this;
 		break;
