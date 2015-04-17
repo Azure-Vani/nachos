@@ -49,7 +49,8 @@ enum ExceptionType { NoException,           // Everything ok!
 		     OverflowException,     // Integer overflow in add or sub.
 		     IllegalInstrException, // Unimplemented or reserved instr.
 		     
-		     NumExceptionTypes
+		     NumExceptionTypes,
+             TlbMissException
 };
 
 // User program CPU state.  The full set of MIPS registers, plus a few
@@ -132,7 +133,7 @@ class Machine {
 				// memory (at addr).  Return FALSE if a 
 				// correct translation couldn't be found.
     
-    ExceptionType Translate(int virtAddr, int* physAddr, int size,bool writing);
+    ExceptionType Translate(int virtAddr, int* physAddr, int size,bool writing, bool ignoreTlb = false, TranslationEntry *retEntry = NULL);
     				// Translate an address, and check for 
 				// alignment.  Set the use and dirty bits in 
 				// the translation entry appropriately,

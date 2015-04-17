@@ -61,15 +61,11 @@ Machine::Machine(bool debug)
     mainMemory = new char[MemorySize];
     for (i = 0; i < MemorySize; i++)
       	mainMemory[i] = 0;
-#ifdef USE_TLB
+
     tlb = new TranslationEntry[TLBSize];
     for (i = 0; i < TLBSize; i++)
 	tlb[i].valid = FALSE;
     pageTable = NULL;
-#else	// use linear page table
-    tlb = NULL;
-    pageTable = NULL;
-#endif
 
     singleStep = debug;
     CheckEndian();
