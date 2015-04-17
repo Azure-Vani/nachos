@@ -133,7 +133,12 @@ class Machine {
 				// memory (at addr).  Return FALSE if a 
 				// correct translation couldn't be found.
     
-    ExceptionType Translate(int virtAddr, int* physAddr, int size,bool writing, bool ignoreTlb = false, TranslationEntry *retEntry = NULL);
+    TranslationEntry* LookupTlb(int vpn);
+    void UpdateTlb(int vpn, TranslationEntry *entry);
+
+    ExceptionType LookupPageTable(int vpn, TranslationEntry *&entry);
+
+    ExceptionType Translate(int virtAddr, int* physAddr, int size,bool writing);
     				// Translate an address, and check for 
 				// alignment.  Set the use and dirty bits in 
 				// the translation entry appropriately,

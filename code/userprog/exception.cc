@@ -57,10 +57,12 @@ ExceptionHandler(ExceptionType which)
     if ((which == SyscallException) && (type == SC_Halt)) {
         DEBUG('a', "Shutdown, initiated by user program.\n");
         interrupt->Halt();
+    } else if ((which == SyscallException) && (type == SC_Exit)) {
+        printf("%d\n", machine->ReadRegister(4));
+        interrupt->Halt();
     } else if (which == PageFaultException) {
         printf("Page fault, enter page swapping routine\n");
-    } else if (which == TlbMissException) {
-        printf("TLB Missing, enter TLB update routine\n");
+        ASSERT(FALSE);
     } else {
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);

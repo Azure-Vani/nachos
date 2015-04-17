@@ -183,8 +183,43 @@ Machine::WriteMem(int addr, int size, int value)
 // 	"writing" -- if TRUE, check the "read-only" bit in the TLB
 //----------------------------------------------------------------------
 
+TranslationEntry* Machine::LookupTlb(int vpn) {
+    for (int i = 0; i < TLBSize; i++) {
+        if (tlb[i].valid && tlb[i].virtualPage == vpn)
+            return &tlb[i];
+    }
+    return NULL;
+}
+
+void Machine::UpdateTlb(int vpn, TranslationEntry* entry) {
+
+#define Evict(index) do {\
+    tlb[index] = *entry;\
+    tlb[index].valid = true;\
+} while (0);
+
+    for (int i = 0; i < TLBSize; i++) {
+        if (!tlb[i].valid) {
+            Evict(i);
+            return;
+        }
+    }
+    Evict(0);
+}
+
+ExceptionType Machine::LookupPageTable(int vpn, TranslationEntry *&entry) {
+    if (vpn >= pageTableSize) {
+        return AddressErrorException;
+    }
+    if (!pageTable[vpn].valid) {
+        return PageFaultException;
+    }
+    entry = &pageTable[vpn];
+    return NoException;
+}
+
 ExceptionType
-Machine::Translate(int virtAddr, int* physAddr, int size, bool writing, bool ignoreTlb, TranslationEntry *retEntry)
+Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
 {
     int i;
     unsigned int vpn, offset;
@@ -207,29 +242,12 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing, bool ign
     vpn = (unsigned) virtAddr / PageSize;
     offset = (unsigned) virtAddr % PageSize;
 
-    if (tlb == NULL || ignoreTlb) {		// => page table => vpn is index into table
-        if (vpn >= pageTableSize) {
-            DEBUG('a', "virtual page # %d too large for page table size %d!\n", 
-                    virtAddr, pageTableSize);
-            return AddressErrorException;
-        } else if (!pageTable[vpn].valid) {
-            DEBUG('a', "virtual page # %d too large for page table size %d!\n", 
-                    virtAddr, pageTableSize);
-            return PageFaultException;
-        }
-        entry = &pageTable[vpn];
-    } else {
-        for (entry = NULL, i = 0; i < TLBSize; i++)
-            if (tlb[i].valid && (tlb[i].virtualPage == vpn)) {
-                entry = &tlb[i];			// FOUND!
-                break;
-            }
-        if (entry == NULL) {				// not found
-            DEBUG('a', "*** no valid TLB entry found for this virtual page!\n");
-            return TlbMissException;		// really, this is a TLB fault,
-            // the page may be in memory,
-            // but not in the TLB
-        }
+    if (!(entry = LookupTlb(vpn))) { // in case of TLB missing
+        ExceptionType e = LookupPageTable(vpn, entry);
+        if (e == NoException) {
+            UpdateTlb(vpn, entry);
+        } else 
+            return e;
     }
 
     if (entry->readOnly && writing) {	// trying to write to a read-only page
@@ -244,7 +262,7 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing, bool ign
         DEBUG('a', "*** frame %d > %d!\n", pageFrame, NumPhysPages);
         return BusErrorException;
     }
-    if (retEntry) *retEntry = *entry;
+
     entry->use = TRUE;		// set the use, dirty bits
     if (writing)
         entry->dirty = TRUE;
