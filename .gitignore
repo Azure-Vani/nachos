@@ -9,6 +9,7 @@ code/network/nachos
 code/test/halt.coff
 code/test/shell.coff
 code/test/sort.coff
+code/test/sort
 code/test/matmult.coff
 code/vm/nachos
 
