@@ -1,2 +1,14 @@
 c++example/
 *.o
+code/userprog/nachos
+
+code/bin/coff2noff
+code/threads/nachos
+code/filesys/nachos
+code/network/nachos
+code/test/halt.coff
+code/test/shell.coff
+code/test/sort.coff
+code/test/matmult.coff
+code/vm/nachos
+
