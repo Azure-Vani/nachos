@@ -188,11 +188,18 @@ class Machine {
     TranslationEntry *pageTable;
     unsigned int pageTableSize;
 
+    void AdvanceClock() {clock++;}
+    int GetClock() {return clock;}
+
   private:
     bool singleStep;		// drop back into the debugger after each
 				// simulated instruction
     int runUntilTime;		// drop back into the debugger when simulated
 				// time reaches this value
+    int clock;
+
+    int SelectTlbLru(void);
+    int SelectTlbFifo(void);
 };
 
 extern void ExceptionHandler(ExceptionType which);

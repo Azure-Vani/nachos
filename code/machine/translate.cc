@@ -185,10 +185,30 @@ Machine::WriteMem(int addr, int size, int value)
 
 TranslationEntry* Machine::LookupTlb(int vpn) {
     for (int i = 0; i < TLBSize; i++) {
-        if (tlb[i].valid && tlb[i].virtualPage == vpn)
+        if (tlb[i].valid && tlb[i].virtualPage == vpn) {
+            tlb[i].TlbLastUsed = machine->GetClock();
             return &tlb[i];
+        }
     }
     return NULL;
+}
+
+int Machine::SelectTlbLru(void) {
+    int w = 0;
+    for (int i = 1; i < TLBSize; i++) {
+        if (tlb[i].TlbLastUsed < tlb[w].TlbLastUsed)
+            w = i;
+    }
+    return w;
+}
+
+int Machine::SelectTlbFifo(void) {
+    int w = 0;
+    for (int i = 1; i < TLBSize; i++) {
+        if (tlb[i].TlbEnterTime < tlb[w].TlbEnterTime)
+            w = i;
+    }
+    return w;
 }
 
 void Machine::UpdateTlb(int vpn, TranslationEntry* entry) {
@@ -196,6 +216,8 @@ void Machine::UpdateTlb(int vpn, TranslationEntry* entry) {
 #define Evict(index) do {\
     tlb[index] = *entry;\
     tlb[index].valid = true;\
+    tlb[index].TlbEnterTime = machine->GetClock(); \
+    tlb[index].TlbLastUsed = machine->GetClock(); \
 } while (0);
 
     for (int i = 0; i < TLBSize; i++) {
@@ -204,7 +226,9 @@ void Machine::UpdateTlb(int vpn, TranslationEntry* entry) {
             return;
         }
     }
-    Evict(0);
+    
+    int which = SelectTlbFifo();
+    Evict(which);
 }
 
 ExceptionType Machine::LookupPageTable(int vpn, TranslationEntry *&entry) {
