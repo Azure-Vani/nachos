@@ -34,6 +34,8 @@
 #include "addrspace.h"
 #include "system.h"
 
+#include <cstring>
+
 // Routines for converting Words and Short Words to and from the
 // simulated machine's format of little endian.  These end up
 // being NOPs when the host machine is also little endian (DEC and Intel).
@@ -184,9 +186,10 @@ Machine::WriteMem(int addr, int size, int value)
 //----------------------------------------------------------------------
 
 TranslationEntry* Machine::LookupTlb(int vpn) {
+    DEBUG('a', "look up tlb for virtual page %d\n", vpn);
     for (int i = 0; i < TLBSize; i++) {
         if (tlb[i].valid && tlb[i].virtualPage == vpn) {
-            tlb[i].TlbLastUsed = machine->GetClock();
+            tlb[i].tlbLastUsed = machine->GetClock();
             return &tlb[i];
         }
     }
@@ -196,7 +199,7 @@ TranslationEntry* Machine::LookupTlb(int vpn) {
 int Machine::SelectTlbLru(void) {
     int w = 0;
     for (int i = 1; i < TLBSize; i++) {
-        if (tlb[i].TlbLastUsed < tlb[w].TlbLastUsed)
+        if (tlb[i].tlbLastUsed < tlb[w].tlbLastUsed)
             w = i;
     }
     return w;
@@ -205,34 +208,42 @@ int Machine::SelectTlbLru(void) {
 int Machine::SelectTlbFifo(void) {
     int w = 0;
     for (int i = 1; i < TLBSize; i++) {
-        if (tlb[i].TlbEnterTime < tlb[w].TlbEnterTime)
+        if (tlb[i].tlbEnterTime < tlb[w].tlbEnterTime)
             w = i;
     }
     return w;
 }
 
-void Machine::UpdateTlb(int vpn, TranslationEntry* entry) {
+void Machine::EvictTlb(int index) {
+    if (tlb[index].valid) {
+        pageTable[tlb[index].virtualPage] = tlb[index];
+    }
+}
 
-#define Evict(index) do {\
-    tlb[index] = *entry;\
-    tlb[index].valid = true;\
-    tlb[index].TlbEnterTime = machine->GetClock(); \
-    tlb[index].TlbLastUsed = machine->GetClock(); \
-} while (0);
+void Machine::SwapTlb(int index, TranslationEntry *entry) {
+    tlb[index] = *entry;
+    tlb[index].valid = true;
+    tlb[index].tlbEnterTime = machine->GetClock(); 
+    tlb[index].tlbLastUsed = machine->GetClock();
+}
+
+void Machine::UpdateTlb(int vpn, TranslationEntry* entry) {
 
     for (int i = 0; i < TLBSize; i++) {
         if (!tlb[i].valid) {
-            Evict(i);
+            EvictTlb(i);
+            SwapTlb(i, entry);
             return;
         }
     }
     
     int which = SelectTlbFifo();
-    Evict(which);
+    EvictTlb(which);
+    SwapTlb(which, entry);
 }
 
 ExceptionType Machine::LookupPageTable(int vpn, TranslationEntry *&entry) {
-    if (vpn >= pageTableSize) {
+    if (vpn >= VirtualPagesPerThread) {
         return AddressErrorException;
     }
     if (!pageTable[vpn].valid) {
@@ -250,7 +261,7 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
     TranslationEntry *entry;
     unsigned int pageFrame;
 
-    DEBUG('a', "\tTranslate 0x%x, %s: ", virtAddr, writing ? "write" : "read");
+    DEBUG('a', "\tTranslate 0x%x, (%d,%d), %s: ", virtAddr, diskOffset, memoryOffset, writing ? "write" : "read");
 
     // check for alignment errors
     if (((size == 4) && (virtAddr & 0x3)) || ((size == 2) && (virtAddr & 0x1))){
@@ -279,6 +290,7 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
         return ReadOnlyException;
     }
     pageFrame = entry->physicalPage;
+    bitmap[pageFrame].lastUsed = machine->GetClock();
 
     // if the pageFrame is too big, there is something really wrong! 
     // An invalid translation was loaded into the page table or TLB. 
@@ -295,3 +307,86 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
     DEBUG('a', "phys addr = 0x%x\n", *physAddr);
     return NoException;
 }
+
+#define MEM_OFFSET(i) ((i) + memoryOffset)
+#define PAGE_OFFSET(i) ((i) + memoryOffset / PageSize)
+#define DISK_OFFSET(i) ((i) + diskOffset)
+
+void Machine::WriteBack(int pn) {
+    int physAddr = pn * PageSize;
+
+    int vpn = bitmap[pn].pt->virtualPage;
+    int virAddr = vpn * PageSize;
+
+    DEBUG('a', "\twrite back phys page %d\n", pn);
+    if (virAddr <= noffH.code.size + noffH.initData.size + noffH.uninitData.size) {
+        int fileOffset = virAddr + noffH.code.inFileAddr;
+        DEBUG('a', "\t[seg] write back file offset: %d\n", fileOffset);
+        execFile->WriteAt(mainMemory + physAddr, PageSize, fileOffset);
+    } else {
+        int offset = VirtualMemoryPerThread - 16 - virAddr;
+        DEBUG('a', "\t[stack] write back stack offset: %d\n", offset);
+        memcpy(mockDisk + DISK_OFFSET(UserStackSize) - offset, mainMemory + physAddr, PageSize);
+    }
+}
+
+void Machine::SwapIn(int pn, int vpn) {
+    int virAddr = vpn * PageSize;
+    int physAddr = pn * PageSize;
+
+    if (virAddr <= noffH.code.size + noffH.initData.size + noffH.uninitData.size) {
+        int fileOffset = virAddr + noffH.code.inFileAddr;
+        DEBUG('a', "\t[seg] swap in file offset: %d\n", fileOffset);
+        execFile->ReadAt(mainMemory + physAddr, PageSize, fileOffset);
+    } else {
+        int offset = VirtualMemoryPerThread - 16 - virAddr;
+        DEBUG('a', "\t[stack] swap in stack offset: %d\n", offset);
+        memcpy(mainMemory + physAddr, mockDisk + DISK_OFFSET(UserStackSize) - offset, PageSize);
+    }
+}
+
+void Machine::PageSwapping(int addr) {
+    int pn = GetEvictPage();
+    int physAddr = pn * PageSize;
+
+    int vpn = addr / PageSize;
+
+    DEBUG('a', "\tswap out phys page: %d, swap in virtual page: %d\n", pn, vpn);
+
+    if (bitmap[pn].pt) {
+        TranslationEntry *pt = bitmap[pn].pt;
+        DEBUG('a', "\tassociated virtual page %d\n", bitmap[pn].pt->virtualPage);
+        for (int i = 0; i < TLBSize; i++) {
+            if (tlb[i].valid && tlb[i].virtualPage == pt->virtualPage) {
+                *pt = tlb[i];
+                break;
+            }
+        }
+        if (bitmap[pn].pt->dirty) 
+            WriteBack(pn);
+        bitmap[pn].pt->valid = false;
+    }
+
+    TranslationEntry *entry = &pageTable[vpn];
+    bitmap[pn].pt = entry;
+    entry->virtualPage = vpn;
+    entry->physicalPage = pn;
+    entry->valid = true;
+    entry->readOnly = false;
+    entry->dirty = false;
+    
+    SwapIn(pn, vpn);
+}
+
+int Machine::GetEvictPage(void) {
+    int w = 0;
+    for (int i = 1; i < PhysPagesPerThread; i++) {
+        if (bitmap[PAGE_OFFSET(i)].lastUsed < bitmap[PAGE_OFFSET(w)].lastUsed) {
+            w = i;
+        }
+    }
+    return PAGE_OFFSET(w);
+}
+
+#undef MEM_OFFSET
+#undef DISK_OFFSET

@@ -66,7 +66,7 @@ TimerInterruptHandler(int dummy)
 	if (currentThread->shouldSwitch()) {
 		interrupt->YieldOnReturn();
 		currentThread->resetTime(0);
-		printf("%d Should switch\n", currentThread->getThreadId());
+		DEBUG('t', "%d Should switch\n", currentThread->getThreadId());
 	}
 }
 

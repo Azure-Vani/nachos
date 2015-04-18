@@ -4,6 +4,8 @@
  *     Basically, we only know about three types of segments:
  *	code (read-only), initialized data, and unitialized data
  */
+#ifndef NOFF_H
+#define NOFF_H
 
 #define NOFFMAGIC	0xbadfad 	/* magic number denoting Nachos 
 					 * object code file 
@@ -23,3 +25,4 @@ typedef struct noffHeader {
 				 * should be zero'ed before use 
 				 */
 } NoffHeader;
+#endif

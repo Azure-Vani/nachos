@@ -62,8 +62,7 @@ SwapHeader (NoffHeader *noffH)
 
 AddrSpace::AddrSpace(OpenFile *executable)
 {
-    NoffHeader noffH;
-    unsigned int i, size;
+    execFile = executable;
 
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
     if ((noffH.noffMagic != NOFFMAGIC) && 
@@ -71,51 +70,34 @@ AddrSpace::AddrSpace(OpenFile *executable)
     	SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
-// how big is address space?
-    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
-			+ UserStackSize;	// we need to increase the size
-						// to leave room for the stack
-    numPages = divRoundUp(size, PageSize);
-    size = numPages * PageSize;
+    printf("(%d %d %d) (%d %d %d) (%d %d %d)\n", noffH.code.virtualAddr, noffH.code.inFileAddr, noffH.code.size, 
+            noffH.initData.virtualAddr, noffH.initData.inFileAddr, noffH.initData.size, 
+            noffH.uninitData.virtualAddr, noffH.uninitData.inFileAddr, noffH.uninitData.size);
+    ASSERT(noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize <= VirtualMemoryPerThread);
 
-    ASSERT(numPages <= NumPhysPages);		// check we're not trying
-						// to run anything too big --
-						// at least until we have
-						// virtual memory
-
-    DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
-					numPages, size);
-// first, set up the translation 
-    pageTable = new TranslationEntry[numPages];
-    for (i = 0; i < numPages; i++) {
-	pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-	pageTable[i].physicalPage = i;
-	pageTable[i].valid = TRUE;
-	pageTable[i].use = FALSE;
-	pageTable[i].dirty = FALSE;
-	pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
-					// a separate page, we could set its 
-					// pages to be read-only
+    if (machine->usedMemory >=  MemorySize) {
+        printf("can not allocate main memory segment for new thread\n");
+        ASSERT(FALSE);
     }
-    
-// zero out the entire address space, to zero the unitialized data segment 
-// and the stack segment
-    bzero(machine->mainMemory, size);
+    usedMemory = machine->usedMemory;
+    machine->usedMemory += PhysMemoryPerThread;
 
-// then, copy in the code and data segments into memory
-    if (noffH.code.size > 0) {
-        DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
-			noffH.code.virtualAddr, noffH.code.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
-			noffH.code.size, noffH.code.inFileAddr);
+    if (machine->usedMockDisk >= AllocateMemory) {
+        printf("run out of all allocated memory for nachos\n");
+        ASSERT(FALSE);
     }
-    if (noffH.initData.size > 0) {
-        DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
-			noffH.initData.virtualAddr, noffH.initData.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
-			noffH.initData.size, noffH.initData.inFileAddr);
-    }
+    usedStack = machine->usedMockDisk;
+    machine->usedMockDisk += UserStackSize;
 
+    pageTable = new TranslationEntry[VirtualPagesPerThread];
+    for (int i = 0; i < VirtualPagesPerThread; i++) {
+        pageTable[i].virtualPage = i;   // for now, virtual page # = phys page #
+        pageTable[i].physicalPage = i;
+        pageTable[i].valid = false;
+        pageTable[i].use = FALSE;
+        pageTable[i].dirty = FALSE;
+        pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
+    }
 }
 
 //----------------------------------------------------------------------
@@ -126,6 +108,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
 AddrSpace::~AddrSpace()
 {
    delete pageTable;
+   delete execFile;
 }
 
 //----------------------------------------------------------------------
@@ -156,8 +139,7 @@ AddrSpace::InitRegisters()
    // Set the stack register to the end of the address space, where we
    // allocated the stack; but subtract off a bit, to make sure we don't
    // accidentally reference off the end!
-    machine->WriteRegister(StackReg, numPages * PageSize - 16);
-    DEBUG('a', "Initializing stack register to %d\n", numPages * PageSize - 16);
+    machine->WriteRegister(StackReg, VirtualPagesPerThread * PageSize - 16);
 }
 
 //----------------------------------------------------------------------
@@ -168,8 +150,14 @@ AddrSpace::InitRegisters()
 //	For now, nothing!
 //----------------------------------------------------------------------
 
-void AddrSpace::SaveState() 
-{}
+void AddrSpace::SaveState() {
+    for (int i = 0; i < TLBSize; i++) {
+        if (machine->tlb[i].valid) {
+            machine->pageTable[machine->tlb[i].virtualPage] = machine->tlb[i];
+            machine->tlb[i].valid = false;
+        }
+    }
+}
 
 //----------------------------------------------------------------------
 // AddrSpace::RestoreState
@@ -182,5 +170,8 @@ void AddrSpace::SaveState()
 void AddrSpace::RestoreState() 
 {
     machine->pageTable = pageTable;
-    machine->pageTableSize = numPages;
+    machine->noffH = noffH;
+    machine->memoryOffset = usedMemory;
+    machine->diskOffset = usedStack;
+    machine->execFile = execFile;
 }

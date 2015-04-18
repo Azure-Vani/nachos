@@ -25,6 +25,10 @@
 #include "utility.h"
 #include "translate.h"
 #include "disk.h"
+#include "noff.h"
+#include "filesys.h"
+
+#include <bitset>
 
 // Definitions related to the size, and format of user memory
 
@@ -32,9 +36,24 @@
 					// the disk sector size, for
 					// simplicity
 
-#define NumPhysPages    32
+// the total physical pages
+#define NumPhysPages    64
+// the total physical memory
 #define MemorySize 	(NumPhysPages * PageSize)
+
+// allocated physical pages per thread
+#define PhysPagesPerThread 8
+// allocated physical memory size per thread
+#define PhysMemoryPerThread (PhysPagesPerThread * PageSize)
+
+// number of pages for virtual memory per thread
+#define VirtualPagesPerThread 128
+// virtual memory size  per thread
+#define VirtualMemoryPerThread (VirtualPagesPerThread * PageSize)
+
 #define TLBSize		4		// if there is a TLB, make it small
+
+#define AllocateMemory 1677216 // allocate 16M memory for nachos
 
 enum ExceptionType { NoException,           // Everything ok!
 		     SyscallException,      // A program executed a system call.
@@ -132,6 +151,8 @@ class Machine {
     				// Read or write 1, 2, or 4 bytes of virtual 
 				// memory (at addr).  Return FALSE if a 
 				// correct translation couldn't be found.
+                
+    void PageSwapping(int addr);
     
     TranslationEntry* LookupTlb(int vpn);
     void UpdateTlb(int vpn, TranslationEntry *entry);
@@ -159,9 +180,15 @@ class Machine {
 // Note that *all* communication between the user program and the kernel 
 // are in terms of these data structures.
 
-    char *mainMemory;		// physical memory to store user program,
+    struct MemInfo *bitmap;
+
+    char *mockDisk; int usedMockDisk;
+
+    char *mainMemory; int usedMemory;		// physical memory to store user program,
 				// code and data, while executing
     int registers[NumTotalRegs]; // CPU registers, for executing user programs
+
+    int memoryOffset, diskOffset;
 
 
 // NOTE: the hardware translation of virtual addresses in the user program
@@ -186,10 +213,12 @@ class Machine {
 					// "read-only" to Nachos kernel code
 
     TranslationEntry *pageTable;
-    unsigned int pageTableSize;
 
     void AdvanceClock() {clock++;}
     int GetClock() {return clock;}
+
+    NoffHeader noffH;
+    OpenFile* execFile;
 
   private:
     bool singleStep;		// drop back into the debugger after each
@@ -200,6 +229,13 @@ class Machine {
 
     int SelectTlbLru(void);
     int SelectTlbFifo(void);
+
+    int GetEvictPage(void);
+    void WriteBack(int addr);
+    void SwapIn(int pn, int vpn);
+
+    void EvictTlb(int index);
+    void SwapTlb(int index, TranslationEntry* entry);
 };
 
 extern void ExceptionHandler(ExceptionType which);

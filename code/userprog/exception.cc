@@ -61,8 +61,8 @@ ExceptionHandler(ExceptionType which)
         printf("%d\n", machine->ReadRegister(4));
         interrupt->Halt();
     } else if (which == PageFaultException) {
-        printf("Page fault, enter page swapping routine\n");
-        ASSERT(FALSE);
+        int addr = machine->ReadRegister(BadVAddrReg);
+        machine->PageSwapping(addr);
     } else {
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);

@@ -20,6 +20,7 @@
 
 #include "copyright.h"
 #include "utility.h"
+#include "noff.h"
 
 // The following class defines an entry in a translation table -- either
 // in a page table or a TLB.  Each entry defines a mapping from one 
@@ -40,8 +41,21 @@ class TranslationEntry {
 			// page is referenced or modified.
     bool dirty;         // This bit is set by the hardware every time the
 			// page is modified.
-    int TlbLastUsed;
-    int TlbEnterTime;
+            
+    // For TLB updating
+    int tlbLastUsed; // should equal to lastUsed
+    int tlbEnterTime;
+
+    TranslationEntry(){
+        valid = 0;
+    }
+};
+
+struct MemInfo {
+    int lastUsed;
+    TranslationEntry *pt;
+    // pt = 0 || lastUsed = 0 indicates the memory has never been used
+    MemInfo():lastUsed(0), pt(0){}
 };
 
 #endif

@@ -7,7 +7,7 @@
  *	and store the result back to the file system!
  */
 
-#define N 100
+#define N 588
 
 int A[N];	/* size of physical memory; with code, we'll run out of space!*/
 
@@ -29,5 +29,5 @@ main()
 	      A[j + 1] = tmp;
     }
     //Exit(A[0]);		/* and then we're done -- should be 0! */
-    Exit(A[0]);
+    Exit(A[1]);
 }
