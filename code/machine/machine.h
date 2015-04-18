@@ -218,7 +218,6 @@ class Machine {
     int GetClock() {return clock;}
 
     NoffHeader noffH;
-    OpenFile* execFile;
 
   private:
     bool singleStep;		// drop back into the debugger after each

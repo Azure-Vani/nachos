@@ -261,7 +261,7 @@ Machine::Translate(int virtAddr, int* physAddr, int size, bool writing)
     TranslationEntry *entry;
     unsigned int pageFrame;
 
-    DEBUG('a', "\tTranslate 0x%x, (%d,%d), %s: ", virtAddr, diskOffset, memoryOffset, writing ? "write" : "read");
+    DEBUG('a', "\tTranslate 0x%x, %d:(%d,%d), %s: ", virtAddr, currentThread->getThreadId(), diskOffset, memoryOffset, writing ? "write" : "read");
 
     // check for alignment errors
     if (((size == 4) && (virtAddr & 0x3)) || ((size == 2) && (virtAddr & 0x1))){
@@ -320,13 +320,11 @@ void Machine::WriteBack(int pn) {
 
     DEBUG('a', "\twrite back phys page %d\n", pn);
     if (virAddr <= noffH.code.size + noffH.initData.size + noffH.uninitData.size) {
-        int fileOffset = virAddr + noffH.code.inFileAddr;
-        DEBUG('a', "\t[seg] write back file offset: %d\n", fileOffset);
-        execFile->WriteAt(mainMemory + physAddr, PageSize, fileOffset);
+        memcpy(mockDisk + DISK_OFFSET(virAddr), mainMemory + physAddr, PageSize);
     } else {
         int offset = VirtualMemoryPerThread - 16 - virAddr;
         DEBUG('a', "\t[stack] write back stack offset: %d\n", offset);
-        memcpy(mockDisk + DISK_OFFSET(UserStackSize) - offset, mainMemory + physAddr, PageSize);
+        memcpy(mockDisk + DISK_OFFSET(VirtualMemoryPerThread) - offset, mainMemory + physAddr, PageSize);
     }
 }
 
@@ -335,13 +333,11 @@ void Machine::SwapIn(int pn, int vpn) {
     int physAddr = pn * PageSize;
 
     if (virAddr <= noffH.code.size + noffH.initData.size + noffH.uninitData.size) {
-        int fileOffset = virAddr + noffH.code.inFileAddr;
-        DEBUG('a', "\t[seg] swap in file offset: %d\n", fileOffset);
-        execFile->ReadAt(mainMemory + physAddr, PageSize, fileOffset);
+        memcpy(mainMemory + physAddr, mockDisk + DISK_OFFSET(virAddr), PageSize);
     } else {
         int offset = VirtualMemoryPerThread - 16 - virAddr;
         DEBUG('a', "\t[stack] swap in stack offset: %d\n", offset);
-        memcpy(mainMemory + physAddr, mockDisk + DISK_OFFSET(UserStackSize) - offset, PageSize);
+        memcpy(mainMemory + physAddr, mockDisk + DISK_OFFSET(VirtualMemoryPerThread) - offset, PageSize);
     }
 }
 

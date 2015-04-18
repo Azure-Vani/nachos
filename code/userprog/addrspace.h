@@ -38,7 +38,6 @@ class AddrSpace {
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
     NoffHeader noffH;
-    OpenFile *execFile;
 };
 
 #endif // ADDRSPACE_H

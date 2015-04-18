@@ -62,18 +62,20 @@ SwapHeader (NoffHeader *noffH)
 
 AddrSpace::AddrSpace(OpenFile *executable)
 {
-    execFile = executable;
-
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
     if ((noffH.noffMagic != NOFFMAGIC) && 
 		(WordToHost(noffH.noffMagic) == NOFFMAGIC))
     	SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
+    /*
     printf("(%d %d %d) (%d %d %d) (%d %d %d)\n", noffH.code.virtualAddr, noffH.code.inFileAddr, noffH.code.size, 
             noffH.initData.virtualAddr, noffH.initData.inFileAddr, noffH.initData.size, 
             noffH.uninitData.virtualAddr, noffH.uninitData.inFileAddr, noffH.uninitData.size);
-    ASSERT(noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize <= VirtualMemoryPerThread);
+            */
+
+    int totalSize = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;
+    ASSERT(totalSize <= VirtualMemoryPerThread);
 
     if (machine->usedMemory >=  MemorySize) {
         printf("can not allocate main memory segment for new thread\n");
@@ -87,7 +89,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
         ASSERT(FALSE);
     }
     usedStack = machine->usedMockDisk;
-    machine->usedMockDisk += UserStackSize;
+    machine->usedMockDisk += VirtualMemoryPerThread;
 
     pageTable = new TranslationEntry[VirtualPagesPerThread];
     for (int i = 0; i < VirtualPagesPerThread; i++) {
@@ -98,6 +100,13 @@ AddrSpace::AddrSpace(OpenFile *executable)
         pageTable[i].dirty = FALSE;
         pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
     }
+
+    if (noffH.code.size > 0)
+        executable->ReadAt(machine->mockDisk + usedStack + noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr);
+    if (noffH.initData.size > 0)
+        executable->ReadAt(machine->mockDisk + usedStack + noffH.initData.virtualAddr, noffH.initData.size, noffH.initData.inFileAddr);
+    if (noffH.uninitData.size > 0)
+        executable->ReadAt(machine->mockDisk + usedStack + noffH.uninitData.virtualAddr, noffH.uninitData.size, noffH.uninitData.inFileAddr);
 }
 
 //----------------------------------------------------------------------
@@ -108,7 +117,6 @@ AddrSpace::AddrSpace(OpenFile *executable)
 AddrSpace::~AddrSpace()
 {
    delete pageTable;
-   delete execFile;
 }
 
 //----------------------------------------------------------------------
@@ -173,5 +181,4 @@ void AddrSpace::RestoreState()
     machine->noffH = noffH;
     machine->memoryOffset = usedMemory;
     machine->diskOffset = usedStack;
-    machine->execFile = execFile;
 }

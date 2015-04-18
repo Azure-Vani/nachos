@@ -7,7 +7,7 @@
  *	and store the result back to the file system!
  */
 
-#define N 588
+#define N 1000
 
 int A[N];	/* size of physical memory; with code, we'll run out of space!*/
 

@@ -59,7 +59,7 @@ ExceptionHandler(ExceptionType which)
         interrupt->Halt();
     } else if ((which == SyscallException) && (type == SC_Exit)) {
         printf("%d\n", machine->ReadRegister(4));
-        interrupt->Halt();
+        currentThread->Finish();
     } else if (which == PageFaultException) {
         int addr = machine->ReadRegister(BadVAddrReg);
         machine->PageSwapping(addr);
