@@ -322,7 +322,7 @@ void Machine::WriteBack(int pn) {
     if (virAddr <= noffH.code.size + noffH.initData.size + noffH.uninitData.size) {
         memcpy(mockDisk + DISK_OFFSET(virAddr), mainMemory + physAddr, PageSize);
     } else {
-        int offset = VirtualMemoryPerThread - 16 - virAddr;
+        int offset = VirtualMemoryPerThread - virAddr;
         DEBUG('a', "\t[stack] write back stack offset: %d\n", offset);
         memcpy(mockDisk + DISK_OFFSET(VirtualMemoryPerThread) - offset, mainMemory + physAddr, PageSize);
     }
@@ -335,7 +335,7 @@ void Machine::SwapIn(int pn, int vpn) {
     if (virAddr <= noffH.code.size + noffH.initData.size + noffH.uninitData.size) {
         memcpy(mainMemory + physAddr, mockDisk + DISK_OFFSET(virAddr), PageSize);
     } else {
-        int offset = VirtualMemoryPerThread - 16 - virAddr;
+        int offset = VirtualMemoryPerThread - virAddr;
         DEBUG('a', "\t[stack] swap in stack offset: %d\n", offset);
         memcpy(mainMemory + physAddr, mockDisk + DISK_OFFSET(VirtualMemoryPerThread) - offset, PageSize);
     }
