@@ -91,14 +91,14 @@ AddrSpace::AddrSpace(OpenFile *executable)
     usedStack = machine->usedMockDisk;
     machine->usedMockDisk += VirtualMemoryPerThread;
 
-    pageTable = new TranslationEntry[VirtualPagesPerThread];
-    for (int i = 0; i < VirtualPagesPerThread; i++) {
-        pageTable[i].virtualPage = i;   // for now, virtual page # = phys page #
+    pageTable = new TranslationEntry[PhysPagesPerThread];
+    for (int i = 0; i < PhysPagesPerThread; i++) {
+        pageTable[i].virtualPage = 0;
         pageTable[i].physicalPage = i;
         pageTable[i].valid = false;
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
-        pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
+        pageTable[i].readOnly = FALSE;
     }
 
     if (noffH.code.size > 0)
@@ -161,7 +161,7 @@ AddrSpace::InitRegisters()
 void AddrSpace::SaveState() {
     for (int i = 0; i < TLBSize; i++) {
         if (machine->tlb[i].valid) {
-            machine->pageTable[machine->tlb[i].virtualPage] = machine->tlb[i];
+            *machine->getVaddrEntry(machine->tlb[i].virtualPage) = machine->tlb[i];
             machine->tlb[i].valid = false;
         }
     }

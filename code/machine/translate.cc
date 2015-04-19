@@ -216,7 +216,7 @@ int Machine::SelectTlbFifo(void) {
 
 void Machine::EvictTlb(int index) {
     if (tlb[index].valid) {
-        pageTable[tlb[index].virtualPage] = tlb[index];
+        *getVaddrEntry(tlb[index].virtualPage) = tlb[index];
     }
 }
 
@@ -246,11 +246,8 @@ ExceptionType Machine::LookupPageTable(int vpn, TranslationEntry *&entry) {
     if (vpn >= VirtualPagesPerThread) {
         return AddressErrorException;
     }
-    if (!pageTable[vpn].valid) {
-        return PageFaultException;
-    }
-    entry = &pageTable[vpn];
-    return NoException;
+    if (entry = getVaddrEntry(vpn)) return NoException;
+    return PageFaultException;
 }
 
 ExceptionType
@@ -349,21 +346,29 @@ void Machine::PageSwapping(int addr) {
 
     DEBUG('a', "\tswap out phys page: %d, swap in virtual page: %d\n", pn, vpn);
 
+    TranslationEntry *entry = NULL;
+
     if (bitmap[pn].pt) {
         TranslationEntry *pt = bitmap[pn].pt;
         DEBUG('a', "\tassociated virtual page %d\n", bitmap[pn].pt->virtualPage);
         for (int i = 0; i < TLBSize; i++) {
             if (tlb[i].valid && tlb[i].virtualPage == pt->virtualPage) {
                 *pt = tlb[i];
+                tlb[i].valid = false;
                 break;
             }
         }
-        if (bitmap[pn].pt->dirty) 
+        if (pt->dirty) 
             WriteBack(pn);
-        bitmap[pn].pt->valid = false;
+        entry = pt;
+    } else {
+        for (int i = 0; i < PhysPagesPerThread; i++) if (!pageTable[i].valid) {
+            entry = &pageTable[i];
+            break;
+        }
+        ASSERT(entry != NULL);
     }
 
-    TranslationEntry *entry = &pageTable[vpn];
     bitmap[pn].pt = entry;
     entry->virtualPage = vpn;
     entry->physicalPage = pn;
@@ -382,6 +387,15 @@ int Machine::GetEvictPage(void) {
         }
     }
     return PAGE_OFFSET(w);
+}
+
+TranslationEntry* Machine::getVaddrEntry(int vpn) {
+    for (int i = 0; i < PhysPagesPerThread; i++) {
+        if (pageTable[i].valid && pageTable[i].virtualPage == vpn) {
+            return &pageTable[i];
+        }
+    }
+    return NULL;
 }
 
 #undef MEM_OFFSET

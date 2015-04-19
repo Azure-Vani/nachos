@@ -55,6 +55,8 @@
 
 #define AllocateMemory 1677216 // allocate 16M memory for nachos
 
+#define HashSize 32
+
 enum ExceptionType { NoException,           // Everything ok!
 		     SyscallException,      // A program executed a system call.
 		     PageFaultException,    // No valid translation found
@@ -213,6 +215,7 @@ class Machine {
 					// "read-only" to Nachos kernel code
 
     TranslationEntry *pageTable;
+    TranslationEntry *getVaddrEntry(int vpn);
 
     void AdvanceClock() {clock++;}
     int GetClock() {return clock;}

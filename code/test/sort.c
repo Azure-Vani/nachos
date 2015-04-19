@@ -7,9 +7,11 @@
  *	and store the result back to the file system!
  */
 
-#define N 1000
+#define N 500
 
 int A[N];	/* size of physical memory; with code, we'll run out of space!*/
+
+int s = 0;
 
 int
 main()
@@ -28,6 +30,8 @@ main()
 	      A[j] = A[j + 1];
 	      A[j + 1] = tmp;
     }
+
+    for (i = 0; i < N; i++) s = s * 517 + A[i];
     //Exit(A[0]);		/* and then we're done -- should be 0! */
-    Exit(A[1]);
+    Exit(s);
 }
