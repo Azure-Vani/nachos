@@ -70,15 +70,13 @@ ConsoleTest (char *in, char *out)
 {
     char ch;
 
-    console = new Console(in, out, ReadAvail, WriteDone, 0);
     readAvail = new Semaphore("read avail", 0);
     writeDone = new Semaphore("write done", 0);
+    console = new Console(in, out, readAvail, writeDone, 0);
     
     for (;;) {
-	readAvail->P();		// wait for character to arrive
 	ch = console->GetChar();
 	console->PutChar(ch);	// echo it!
-	writeDone->P() ;        // wait for write to finish
 	if (ch == 'q') return;  // if q, quit
     }
 }

@@ -36,8 +36,8 @@ static void ConsoleWriteDone(int c)
 //		output
 //----------------------------------------------------------------------
 
-Console::Console(char *readFile, char *writeFile, VoidFunctionPtr readAvail, 
-		VoidFunctionPtr writeDone, int callArg)
+Console::Console(char *readFile, char *writeFile, Semaphore* readAvail, 
+		Semaphore* writeDone, int callArg)
 {
     if (readFile == NULL)
 	readFileNo = 0;					// keyboard = stdin
@@ -100,7 +100,7 @@ Console::CheckCharAvail()
     Read(readFileNo, &c, sizeof(char));
     incoming = c ;
     stats->numConsoleCharsRead++;
-    (*readHandler)(handlerArg);	
+    readHandler->V();
 }
 
 //----------------------------------------------------------------------
@@ -115,7 +115,7 @@ Console::WriteDone()
 {
     putBusy = FALSE;
     stats->numConsoleCharsWritten++;
-    (*writeHandler)(handlerArg);
+    writeHandler->V();
 }
 
 //----------------------------------------------------------------------
@@ -127,6 +127,7 @@ Console::WriteDone()
 char
 Console::GetChar()
 {
+    readHandler->P();
    char ch = incoming;
 
    incoming = EOF;
@@ -147,4 +148,5 @@ Console::PutChar(char ch)
     putBusy = TRUE;
     interrupt->Schedule(ConsoleWriteDone, (int)this, ConsoleTime,
 					ConsoleWriteInt);
+    writeHandler->P();
 }

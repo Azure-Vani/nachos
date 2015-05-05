@@ -25,6 +25,7 @@
 
 #include "copyright.h"
 #include "utility.h"
+#include "synch.h"
 
 // The following class defines a hardware console device.
 // Input and output to the device is simulated by reading 
@@ -37,8 +38,8 @@
 
 class Console {
   public:
-    Console(char *readFile, char *writeFile, VoidFunctionPtr readAvail, 
-	VoidFunctionPtr writeDone, int callArg);
+    Console(char *readFile, char *writeFile, Semaphore* readAvail, 
+	Semaphore* writeDone, int callArg);
 				// initialize the hardware console device
     ~Console();			// clean up console emulation
 
@@ -59,9 +60,9 @@ class Console {
   private:
     int readFileNo;			// UNIX file emulating the keyboard 
     int writeFileNo;			// UNIX file emulating the display
-    VoidFunctionPtr writeHandler; 	// Interrupt handler to call when 
+    Semaphore* writeHandler; 	// Interrupt handler to call when 
 					// the PutChar I/O completes
-    VoidFunctionPtr readHandler; 	// Interrupt handler to call when 
+    Semaphore* readHandler; 	// Interrupt handler to call when 
 					// a character arrives from the keyboard
     int handlerArg;			// argument to be passed to the 
 					// interrupt handlers
