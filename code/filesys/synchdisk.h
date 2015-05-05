@@ -24,6 +24,13 @@
 // This class provides the abstraction that for any individual thread
 // making a request, it waits around until the operation finishes before
 // returning.
+#define CacheSize 8
+struct Cache {
+    int valid;
+    int sector;
+    char data[SectorSize];
+};
+
 class SynchDisk {
   public:
     SynchDisk(char* name);    		// Initialize a synchronous disk,
@@ -48,6 +55,7 @@ class SynchDisk {
 					// with the interrupt handler
     Lock *lock;		  		// Only one read/write request
 					// can be sent to the disk at a time
+    Cache *buf;
 };
 
 #endif // SYNCHDISK_H

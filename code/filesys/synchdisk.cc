@@ -45,6 +45,8 @@ SynchDisk::SynchDisk(char* name)
     semaphore = new Semaphore("synch disk", 0);
     lock = new Lock("synch disk lock");
     disk = new Disk(name, DiskRequestDone, (int) this);
+    buf = new Cache[CacheSize];
+    for (int i = 0; i < CacheSize; i++) buf[i].valid = 0;
 }
 
 //----------------------------------------------------------------------
@@ -73,7 +75,23 @@ void
 SynchDisk::ReadSector(int sectorNumber, char* data)
 {
     lock->Acquire();			// only one disk I/O at a time
-    disk->ReadRequest(sectorNumber, data);
+    int w = -1;
+    for (int i = 0; i < CacheSize; i++) if (buf[i].valid && buf[i].sector == sectorNumber) {
+        w = i;
+        break;
+    }
+    if (w == -1) {
+        w = sectorNumber % CacheSize;
+        buf[w].valid = true;
+        buf[w].sector = sectorNumber;
+        disk->ReadRequest(sectorNumber, data);
+        memcpy(buf[w].data, data, SectorSize);
+    }
+    else {
+        memcpy(data, buf[w].data, SectorSize);
+        lock->Release();
+        return;
+    }
     semaphore->P();			// wait for interrupt
     lock->Release();
 }
@@ -91,6 +109,14 @@ void
 SynchDisk::WriteSector(int sectorNumber, char* data)
 {
     lock->Acquire();			// only one disk I/O at a time
+    int w = -1;
+    for (int i = 0; i < CacheSize; i++) if (buf[i].valid && buf[i].sector == sectorNumber) {
+        w = i;
+        break;
+    }
+    if (w != -1) {
+        memcpy(buf[w].data, data, SectorSize);
+    }
     disk->WriteRequest(sectorNumber, data);
     semaphore->P();			// wait for interrupt
     lock->Release();
