@@ -181,7 +181,7 @@ int FileHeader::GetIthSector(int index, int *cache) {
         int ret = buf[index - DirectEntries + 1 - (which - DirectEntries) * EntriesPerSector - 1];
     //    for (int i = 0; i < NumEntries; i++) printf("%d,", dataSectors[i]); puts("");
      //   printf("%d %d %d\n", buf[0], buf[1], buf[2]);
-        delete buf;
+        delete [] buf;
       //  printf("index %d %d (which %d)\n", index, ret, which);
         return ret;
     }
