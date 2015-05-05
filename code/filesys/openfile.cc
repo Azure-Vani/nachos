@@ -33,6 +33,7 @@ OpenFile::OpenFile(int sector)
     hdr->FetchFrom(sector);
     seekPosition = 0;
     hdrSector = sector;
+    openedEntry = NULL;
 }
 
 //----------------------------------------------------------------------
@@ -42,6 +43,22 @@ OpenFile::OpenFile(int sector)
 
 OpenFile::~OpenFile()
 {
+    if (openedEntry != NULL) {
+        openedEntry->count--;
+        if (openedEntry->count == 0) {
+            openedEntry->valid = 0;
+            delete openedEntry->lock;
+            if (openedEntry->shouldDel) {
+                // nachos ruozhi
+                char *name = new char[openedEntry->name.length() + 1];
+                for (int i = 0; i < openedEntry->name.length(); i++)
+                    name[i] = openedEntry->name[i];
+                name[openedEntry->name.length()] = '\0';
+                fileSystem->Remove(name);
+                delete [] name;
+            }
+        }
+    }
     delete hdr;
 }
 
@@ -75,7 +92,13 @@ OpenFile::Seek(int position)
 int
 OpenFile::Read(char *into, int numBytes)
 {
+    if (openedEntry != NULL) {
+        openedEntry->lock->Acquire();
+    }
    int result = ReadAt(into, numBytes, seekPosition);
+   if (openedEntry != NULL) {
+       openedEntry->lock->Release();
+   }
    seekPosition += result;
    return result;
 }
@@ -83,8 +106,14 @@ OpenFile::Read(char *into, int numBytes)
 int
 OpenFile::Write(char *into, int numBytes)
 {
+    if (openedEntry != NULL) {
+        openedEntry->lock->Acquire();
+    }
    // extend the file
    int result = WriteAt(into, numBytes, seekPosition);
+   if (openedEntry != NULL) {
+       openedEntry->lock->Release();
+   }
    seekPosition += result;
    return result;
 }
@@ -122,8 +151,9 @@ OpenFile::ReadAt(char *into, int numBytes, int position)
     int i, firstSector, lastSector, numSectors;
     char *buf;
 
-    if ((numBytes <= 0) || (position >= fileLength))
+    if ((numBytes <= 0) || (position >= fileLength)) {
     	return 0; 				// check request
+    }
     if ((position + numBytes) > fileLength)		
 	numBytes = fileLength - position;
     DEBUG('f', "Reading %d bytes at %d, from file of length %d.\n", 	

@@ -78,11 +78,7 @@ extern void MailTest(int networkID);
 //		ex: "nachos -d +" -> argv = {"nachos", "-d", "+"}
 //----------------------------------------------------------------------
 
-#ifdef USER_PROGRAM
-void f(int x) {
-    StartProcess((char*)x);
-}
-#endif
+
 
 int
 main(int argc, char **argv)
@@ -102,7 +98,6 @@ main(int argc, char **argv)
 	    ASSERT(argc > 1);
             
             Thread *t = new Thread("haha");
-            t->Fork(f, (int)*(argv + 1));
             StartProcess(*(argv + 1));
             argCount = 2;
         } else if (!strcmp(*argv, "-c")) {      // test the console

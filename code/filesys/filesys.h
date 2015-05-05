@@ -37,6 +37,9 @@
 
 #include "copyright.h"
 #include "openfile.h"
+#include "synch.h"
+
+#include <string>
 
 #ifdef FILESYS_STUB 		// Temporarily implement file system calls as 
 				// calls to UNIX, until the real file system
@@ -90,6 +93,7 @@ class FileSystem {
     OpenFile* getFreeMapFile(void) {
         return freeMapFile;
     }
+    void Close(OpenFile *o);
 
   private:
    OpenFile* freeMapFile;		// Bit map of free disk blocks,
@@ -97,6 +101,19 @@ class FileSystem {
    OpenFile* directoryFile;		// "Root" directory -- list of 
 					// file names, represented as a file
 };
+
+#define MaxOpenedFiles 64
+
+class Lock;
+
+struct OpenedFile {
+    int valid;
+    std::string name;
+    Lock *lock;
+    int shouldDel;
+    int count;
+};
+extern OpenedFile openedFiles[MaxOpenedFiles];
 
 #endif // FILESYS
 

@@ -43,7 +43,7 @@ main.o: ../threads/main.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/system.h ../threads/thread.h \
  ../machine/machine.h ../threads/utility.h ../machine/translate.h \
  ../bin/noff.h ../machine/disk.h ../filesys/filesys.h \
- ../filesys/openfile.h /usr/include/c++/4.8/bitset \
+ ../filesys/openfile.h ../threads/synch.h ../threads/list.h \
  /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
@@ -94,8 +94,8 @@ main.o: ../threads/main.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h
 list.o: ../threads/list.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/list.h ../threads/utility.h \
@@ -129,7 +129,7 @@ scheduler.o: ../threads/scheduler.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/thread.h ../machine/machine.h \
  ../threads/utility.h ../machine/translate.h ../bin/noff.h \
  ../machine/disk.h ../filesys/filesys.h ../filesys/openfile.h \
- /usr/include/c++/4.8/bitset /usr/include/c++/4.8/string \
+ ../threads/synch.h /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/cpu_defines.h \
@@ -179,9 +179,9 @@ scheduler.o: ../threads/scheduler.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/system.h ../machine/interrupt.h ../threads/list.h \
- ../machine/stats.h ../machine/timer.h
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h ../threads/system.h ../machine/interrupt.h \
+ ../threads/list.h ../machine/stats.h ../machine/timer.h
 synch.o: ../threads/synch.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/synch.h ../threads/thread.h \
  ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
@@ -198,7 +198,7 @@ synch.o: ../threads/synch.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/sys_errlist.h /usr/include/string.h \
  /usr/include/xlocale.h ../machine/machine.h ../threads/utility.h \
  ../machine/translate.h ../bin/noff.h ../machine/disk.h \
- ../filesys/filesys.h ../filesys/openfile.h /usr/include/c++/4.8/bitset \
+ ../filesys/filesys.h ../filesys/openfile.h ../threads/synch.h \
  /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
@@ -249,10 +249,10 @@ synch.o: ../threads/synch.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/list.h ../threads/system.h ../threads/scheduler.h \
- ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h ../threads/list.h ../threads/system.h \
+ ../threads/scheduler.h ../machine/interrupt.h ../threads/list.h \
+ ../machine/stats.h ../machine/timer.h
 synchlist.o: ../threads/synchlist.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/synchlist.h ../threads/list.h \
  ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
@@ -270,8 +270,7 @@ synchlist.o: ../threads/synchlist.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/synch.h ../threads/thread.h \
  ../machine/machine.h ../threads/utility.h ../machine/translate.h \
  ../bin/noff.h ../machine/disk.h ../filesys/filesys.h \
- ../filesys/openfile.h /usr/include/c++/4.8/bitset \
- /usr/include/c++/4.8/string \
+ ../filesys/openfile.h ../threads/synch.h /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/cpu_defines.h \
@@ -321,7 +320,8 @@ synchlist.o: ../threads/synchlist.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h
 system.o: ../threads/system.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/system.h ../threads/utility.h \
  ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
@@ -339,7 +339,7 @@ system.o: ../threads/system.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/thread.h ../machine/machine.h \
  ../threads/utility.h ../machine/translate.h ../bin/noff.h \
  ../machine/disk.h ../filesys/filesys.h ../filesys/openfile.h \
- /usr/include/c++/4.8/bitset /usr/include/c++/4.8/string \
+ ../threads/synch.h ../threads/list.h /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/cpu_defines.h \
@@ -389,8 +389,8 @@ system.o: ../threads/system.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h
 thread.o: ../threads/thread.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/thread.h ../threads/utility.h \
@@ -408,8 +408,8 @@ thread.o: ../threads/thread.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/sys_errlist.h /usr/include/string.h \
  /usr/include/xlocale.h ../machine/machine.h ../threads/utility.h \
  ../machine/translate.h ../bin/noff.h ../machine/disk.h \
- ../filesys/filesys.h ../filesys/openfile.h /usr/include/c++/4.8/bitset \
- /usr/include/c++/4.8/string \
+ ../filesys/filesys.h ../filesys/openfile.h ../threads/synch.h \
+ ../threads/list.h /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/cpu_defines.h \
@@ -459,8 +459,8 @@ thread.o: ../threads/thread.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/switch.h ../threads/synch.h ../threads/list.h \
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h ../threads/switch.h ../threads/synch.h \
  ../threads/system.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h
 utility.o: ../threads/utility.cc /usr/include/stdc-predef.h \
@@ -494,7 +494,7 @@ threadtest.o: ../threads/threadtest.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/thread.h ../machine/machine.h \
  ../threads/utility.h ../machine/translate.h ../bin/noff.h \
  ../machine/disk.h ../filesys/filesys.h ../filesys/openfile.h \
- /usr/include/c++/4.8/bitset /usr/include/c++/4.8/string \
+ ../threads/synch.h ../threads/list.h /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/cpu_defines.h \
@@ -544,8 +544,8 @@ threadtest.o: ../threads/threadtest.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
  ../threads/synch.h
 interrupt.o: ../machine/interrupt.cc /usr/include/stdc-predef.h \
@@ -565,7 +565,7 @@ interrupt.o: ../machine/interrupt.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/system.h ../threads/thread.h \
  ../machine/machine.h ../threads/utility.h ../machine/translate.h \
  ../bin/noff.h ../machine/disk.h ../filesys/filesys.h \
- ../filesys/openfile.h /usr/include/c++/4.8/bitset \
+ ../filesys/openfile.h ../threads/synch.h ../threads/list.h \
  /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
@@ -616,8 +616,8 @@ interrupt.o: ../machine/interrupt.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h ../threads/scheduler.h ../machine/interrupt.h \
  ../machine/stats.h ../machine/timer.h
 sysdep.o: ../machine/sysdep.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h /usr/include/stdio.h /usr/include/features.h \
@@ -679,7 +679,7 @@ sysdep.o: ../machine/sysdep.cc /usr/include/stdc-predef.h \
  ../threads/system.h ../threads/thread.h ../machine/machine.h \
  ../threads/utility.h ../machine/translate.h ../bin/noff.h \
  ../machine/disk.h ../filesys/filesys.h ../filesys/openfile.h \
- /usr/include/c++/4.8/bitset /usr/include/c++/4.8/string \
+ ../threads/synch.h ../threads/list.h /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/cpu_defines.h \
@@ -724,8 +724,8 @@ sysdep.o: ../machine/sysdep.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/timex.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h ../threads/scheduler.h ../machine/interrupt.h \
  ../machine/stats.h ../machine/timer.h
 stats.o: ../machine/stats.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/utility.h ../threads/copyright.h \
@@ -758,7 +758,7 @@ timer.o: ../machine/timer.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/system.h ../threads/utility.h \
  ../threads/thread.h ../machine/machine.h ../machine/translate.h \
  ../bin/noff.h ../machine/disk.h ../filesys/filesys.h \
- ../filesys/openfile.h /usr/include/c++/4.8/bitset \
+ ../filesys/openfile.h ../threads/synch.h ../threads/list.h \
  /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
@@ -809,8 +809,8 @@ timer.o: ../machine/timer.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h
 addrspace.o: ../userprog/addrspace.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../threads/system.h ../threads/copyright.h \
@@ -829,7 +829,7 @@ addrspace.o: ../userprog/addrspace.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/thread.h ../machine/machine.h \
  ../threads/utility.h ../machine/translate.h ../bin/noff.h \
  ../machine/disk.h ../filesys/filesys.h ../filesys/openfile.h \
- /usr/include/c++/4.8/bitset /usr/include/c++/4.8/string \
+ ../threads/synch.h ../threads/list.h /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/cpu_defines.h \
@@ -879,8 +879,8 @@ addrspace.o: ../userprog/addrspace.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
  ../userprog/addrspace.h
 bitmap.o: ../userprog/bitmap.cc /usr/include/stdc-predef.h \
@@ -915,7 +915,7 @@ exception.o: ../userprog/exception.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/thread.h ../machine/machine.h \
  ../threads/utility.h ../machine/translate.h ../bin/noff.h \
  ../machine/disk.h ../filesys/filesys.h ../filesys/openfile.h \
- /usr/include/c++/4.8/bitset /usr/include/c++/4.8/string \
+ ../threads/synch.h ../threads/list.h /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/cpu_defines.h \
@@ -965,8 +965,8 @@ exception.o: ../userprog/exception.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
  ../userprog/syscall.h
 progtest.o: ../userprog/progtest.cc /usr/include/stdc-predef.h \
@@ -986,7 +986,7 @@ progtest.o: ../userprog/progtest.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/thread.h ../machine/machine.h \
  ../threads/utility.h ../machine/translate.h ../bin/noff.h \
  ../machine/disk.h ../filesys/filesys.h ../filesys/openfile.h \
- /usr/include/c++/4.8/bitset /usr/include/c++/4.8/string \
+ ../threads/synch.h ../threads/list.h /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/cpu_defines.h \
@@ -1036,10 +1036,10 @@ progtest.o: ../userprog/progtest.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../machine/console.h ../userprog/addrspace.h ../threads/synch.h
+ ../machine/console.h ../userprog/addrspace.h
 console.o: ../machine/console.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../machine/console.h ../threads/utility.h \
  ../threads/copyright.h ../threads/bool.h ../machine/sysdep.h \
@@ -1057,7 +1057,7 @@ console.o: ../machine/console.cc /usr/include/stdc-predef.h \
  /usr/include/xlocale.h ../threads/system.h ../threads/utility.h \
  ../threads/thread.h ../machine/machine.h ../machine/translate.h \
  ../bin/noff.h ../machine/disk.h ../filesys/filesys.h \
- ../filesys/openfile.h /usr/include/c++/4.8/bitset \
+ ../filesys/openfile.h ../threads/synch.h ../threads/list.h \
  /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
@@ -1108,8 +1108,8 @@ console.o: ../machine/console.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../userprog/addrspace.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h
 machine.o: ../machine/machine.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../machine/machine.h ../threads/utility.h \
@@ -1127,7 +1127,9 @@ machine.o: ../machine/machine.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/sys_errlist.h /usr/include/string.h \
  /usr/include/xlocale.h ../machine/translate.h ../bin/noff.h \
  ../machine/disk.h ../filesys/filesys.h ../filesys/openfile.h \
- /usr/include/c++/4.8/bitset /usr/include/c++/4.8/string \
+ ../threads/synch.h ../threads/thread.h ../threads/utility.h \
+ ../machine/machine.h ../userprog/addrspace.h ../threads/list.h \
+ /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/cpu_defines.h \
@@ -1177,11 +1179,10 @@ machine.o: ../machine/machine.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../threads/system.h \
- ../threads/utility.h ../threads/thread.h ../machine/machine.h \
- ../userprog/addrspace.h ../threads/scheduler.h ../threads/list.h \
- ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h /usr/include/i386-linux-gnu/sys/mman.h \
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../threads/system.h ../threads/scheduler.h ../machine/interrupt.h \
+ ../threads/list.h ../machine/stats.h ../machine/timer.h \
+ /usr/include/i386-linux-gnu/sys/mman.h \
  /usr/include/i386-linux-gnu/bits/mman.h \
  /usr/include/i386-linux-gnu/bits/mman-linux.h \
  /usr/include/i386-linux-gnu/sys/stat.h \
@@ -1213,7 +1214,9 @@ mipssim.o: ../machine/mipssim.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/sys_errlist.h /usr/include/string.h \
  /usr/include/xlocale.h ../machine/translate.h ../bin/noff.h \
  ../machine/disk.h ../filesys/filesys.h ../filesys/openfile.h \
- /usr/include/c++/4.8/bitset /usr/include/c++/4.8/string \
+ ../threads/synch.h ../threads/thread.h ../threads/utility.h \
+ ../machine/machine.h ../userprog/addrspace.h ../threads/list.h \
+ /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/cpu_defines.h \
@@ -1263,11 +1266,10 @@ mipssim.o: ../machine/mipssim.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../machine/mipssim.h \
- ../threads/system.h ../threads/utility.h ../threads/thread.h \
- ../machine/machine.h ../userprog/addrspace.h ../threads/scheduler.h \
- ../threads/list.h ../machine/interrupt.h ../threads/list.h \
- ../machine/stats.h ../machine/timer.h
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../machine/mipssim.h ../threads/system.h ../threads/scheduler.h \
+ ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
+ ../machine/timer.h
 translate.o: ../machine/translate.cc /usr/include/stdc-predef.h \
  ../threads/copyright.h ../machine/machine.h ../threads/utility.h \
  ../threads/copyright.h ../threads/bool.h ../machine/sysdep.h \
@@ -1284,7 +1286,9 @@ translate.o: ../machine/translate.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/sys_errlist.h /usr/include/string.h \
  /usr/include/xlocale.h ../machine/translate.h ../bin/noff.h \
  ../machine/disk.h ../filesys/filesys.h ../filesys/openfile.h \
- /usr/include/c++/4.8/bitset /usr/include/c++/4.8/string \
+ ../threads/synch.h ../threads/thread.h ../threads/utility.h \
+ ../machine/machine.h ../userprog/addrspace.h ../threads/list.h \
+ /usr/include/c++/4.8/string \
  /usr/include/i386-linux-gnu/c++/4.8/bits/c++config.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/os_defines.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/cpu_defines.h \
@@ -1334,11 +1338,10 @@ translate.o: ../machine/translate.cc /usr/include/stdc-predef.h \
  /usr/include/i386-linux-gnu/bits/pthreadtypes.h \
  /usr/include/i386-linux-gnu/bits/setjmp.h \
  /usr/include/i386-linux-gnu/c++/4.8/bits/atomic_word.h \
- /usr/include/c++/4.8/bits/basic_string.tcc ../userprog/addrspace.h \
- ../threads/system.h ../threads/utility.h ../threads/thread.h \
- ../machine/machine.h ../threads/scheduler.h ../threads/list.h \
- ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h /usr/include/c++/4.8/cstring
+ /usr/include/c++/4.8/bits/basic_string.tcc /usr/include/c++/4.8/bitset \
+ ../threads/system.h ../threads/scheduler.h ../machine/interrupt.h \
+ ../threads/list.h ../machine/stats.h ../machine/timer.h \
+ /usr/include/c++/4.8/cstring
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY
 # see make depend above

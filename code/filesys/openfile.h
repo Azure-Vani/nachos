@@ -89,6 +89,7 @@ class OpenFile {
     FileHeader * GetHdr(void) {
         return hdr;
     }
+    struct OpenedFile *openedEntry;
   private:
     FileHeader *hdr;			// Header for this file 
     int seekPosition;			// Current position within the file

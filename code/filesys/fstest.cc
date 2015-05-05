@@ -174,9 +174,35 @@ FileRead()
     delete openFile;	// close file
 }
 
+
+void test_write(int x) {
+    OpenFile *fd = fileSystem->Open("small");
+    for (int i = 0; i < 100; i++) {
+        printf("w%d\n", i);
+        fd->Write("x", 1);
+        interrupt->OneTick();
+    }
+}
+
+void test_read(int x) {
+    OpenFile *fd = fileSystem->Open("small");
+    for (int i = 0; i < 100; i++) {
+        printf("r%d\n", i);
+        char ch[1000];
+        fd->Read(ch, fd->GetHdr()->FileLength());
+        ch[fd->GetHdr()->FileLength()] = '\0';
+        printf("%s\n", (ch));
+        interrupt->OneTick();
+    }
+}
+
 void
 PerformanceTest()
 {
+    Thread *t = new Thread("test");
+    t->Fork(test_write, 0);
+    test_read(0);
+    /*
     printf("Starting file system performance test:\n");
     stats->Print();
     FileWrite();
@@ -187,5 +213,5 @@ PerformanceTest()
       return;
     }
     stats->Print();
+    */
 }
-

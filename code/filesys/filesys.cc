@@ -79,6 +79,8 @@
 
 #define PathMaxLen 255
 
+OpenedFile openedFiles[MaxOpenedFiles];
+
 FileSystem::FileSystem(bool format)
 { 
     DEBUG('f', "Initializing the file system.\n");
@@ -266,12 +268,35 @@ FileSystem::Create(char *_name, int initialSize, int type)
 //	"name" -- the text name of the file to be opened
 //----------------------------------------------------------------------
 
+int FindOpenedFile(char *_name) {
+    for (int i = 0; i < MaxOpenedFiles; i++) {
+        if (openedFiles[i].valid && openedFiles[i].name == _name) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 OpenFile *
 FileSystem::Open(char *_name)
 { 
     Directory *directory = new Directory(NumDirEntries);
     OpenFile *openFile = NULL;
     int sector;
+
+    int w = FindOpenedFile(_name);
+    if (w == -1) {
+        for (int i = 0; i < MaxOpenedFiles; i++) {
+            if (!openedFiles[i].valid) {
+                w = i;
+                break;
+            }
+        }
+        openedFiles[w].valid = true;
+        openedFiles[w].name = _name;
+        openedFiles[w].lock = new Lock("file lock");
+        openedFiles[w].count = 1;
+    }
 
     DEBUG('f', "Opening file %s\n", _name);
     directory->FetchFrom(directoryFile);
@@ -282,8 +307,10 @@ FileSystem::Open(char *_name)
     if (dirFile == NULL) dirFile = directoryFile;
 
     sector = directory->Find(name); 
-    if (sector >= 0) 		
+    if (sector >= 0) {		
         openFile = new OpenFile(sector);	// name was found in directory 
+        openFile->openedEntry = &openedFiles[w];
+    }
     if (dirFile != directoryFile) delete dirFile;
     delete directory;
     delete [] delName;
@@ -312,6 +339,12 @@ FileSystem::Remove(char *_name)
     FileHeader *fileHdr;
     int sector;
     
+    int w = FindOpenedFile(_name);
+    if (w != -1) {
+        openedFiles[w].shouldDel = true;
+        return false;
+    }
+
     directory = new Directory(NumDirEntries);
     directory->FetchFrom(directoryFile);
 
@@ -425,5 +458,9 @@ void FileSystem::Cat(char* name) {
         printf("%x\n", buf[i]);
     }
     delete file;
+}
+
+void FileSystem::Close(OpenFile *ofile) {
+    delete ofile;
 }
 

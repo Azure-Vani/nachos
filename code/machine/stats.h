@@ -50,7 +50,7 @@ class Statistics {
 // these time constants are none too exact.
 
 #define UserTick 	1	// advance for each user-level instruction 
-#define SystemTick 	1 	// advance each time interrupts are enabled
+#define SystemTick 	200 	// advance each time interrupts are enabled
 #define RotationTime 	500 	// time disk takes to rotate one sector
 #define SeekTime 	500    	// time disk takes to seek past one track
 #define ConsoleTime 	100	// time to read or write one character
