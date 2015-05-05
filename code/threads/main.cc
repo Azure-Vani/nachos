@@ -93,23 +93,6 @@ main(int argc, char **argv)
     DEBUG('t', "Entering main");
     (void) Initialize(argc, argv);
     
-#ifdef THREADS
-    for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
-      argCount = 1;
-      switch (argv[0][1]) {
-      case 'q':
-        testnum = atoi(argv[1]);
-        argCount++;
-        break;
-      default:
-        testnum = 1;
-        break;
-      }
-    }
-
-    // ThreadTest();
-#endif
-
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
 	argCount = 1;
         if (!strcmp(*argv, "-z"))               // print copyright
@@ -130,7 +113,7 @@ main(int argc, char **argv)
 	        ConsoleTest(*(argv + 1), *(argv + 2));
 	        argCount = 3;
 	    }
-	    interrupt->Halt();		// once we start the console, then 
+	    //interrupt->Halt();		// once we start the console, then 
 					// Nachos will loop forever waiting 
 					// for console input
 	}
@@ -154,7 +137,10 @@ main(int argc, char **argv)
             fileSystem->Print();
 	} else if (!strcmp(*argv, "-t")) {	// performance test
             PerformanceTest();
-	}
+	} else if (!strcmp(*argv, "-cat")) {
+        fileSystem->Cat(*(argv + 1));
+        argCount = 2;
+    }
 #endif // FILESYS
 #ifdef NETWORK
         if (!strcmp(*argv, "-o")) {

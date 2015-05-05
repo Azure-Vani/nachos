@@ -20,6 +20,7 @@
 #include "thread.h"
 #include "disk.h"
 #include "stats.h"
+#include "filehdr.h"
 
 #define TransferSize 	10 	// make it small, just to be difficult
 
@@ -60,8 +61,9 @@ Copy(char *from, char *to)
     
 // Copy the data in TransferSize chunks
     buffer = new char[TransferSize];
-    while ((amountRead = fread(buffer, sizeof(char), TransferSize, fp)) > 0)
-	openFile->Write(buffer, amountRead);	
+    while ((amountRead = fread(buffer, sizeof(char), TransferSize, fp)) > 0) {
+        openFile->Write(buffer, amountRead);	
+    }
     delete [] buffer;
 
 // Close the UNIX and the Nachos files
@@ -111,7 +113,7 @@ Print(char *name)
 #define FileName 	"TestFile"
 #define Contents 	"1234567890"
 #define ContentSize 	strlen(Contents)
-#define FileSize 	((int)(ContentSize * 5000))
+#define FileSize 	((int)(ContentSize * 3000))
 
 static void 
 FileWrite()
@@ -132,11 +134,11 @@ FileWrite()
     }
     for (i = 0; i < FileSize; i += ContentSize) {
         numBytes = openFile->Write(Contents, ContentSize);
-	if (numBytes < 10) {
-	    printf("Perf test: unable to write %s\n", FileName);
-	    delete openFile;
-	    return;
-	}
+        if (numBytes < 10) {
+            printf("Perf test: unable to write %s\n", FileName);
+            delete openFile;
+            return;
+        }
     }
     delete openFile;	// close file
 }
@@ -158,6 +160,9 @@ FileRead()
     }
     for (i = 0; i < FileSize; i += ContentSize) {
         numBytes = openFile->Read(buffer, ContentSize);
+        printf("<<<");
+        for (int i = 0; i < numBytes; i++) putchar(buffer[i]);
+        printf(">>>\n");
 	if ((numBytes < 10) || strncmp(buffer, Contents, ContentSize)) {
 	    printf("Perf test: unable to read %s\n", FileName);
 	    delete openFile;
@@ -175,6 +180,7 @@ PerformanceTest()
     printf("Starting file system performance test:\n");
     stats->Print();
     FileWrite();
+    OpenFile *openFile = fileSystem->Open(FileName);
     FileRead();
     if (!fileSystem->Remove(FileName)) {
       printf("Perf test: unable to remove %s\n", FileName);

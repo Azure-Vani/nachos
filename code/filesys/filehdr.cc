@@ -40,14 +40,69 @@
 
 bool
 FileHeader::Allocate(BitMap *freeMap, int fileSize)
-{ 
-    numBytes = fileSize;
-    numSectors  = divRoundUp(fileSize, SectorSize);
-    if (freeMap->NumClear() < numSectors)
-	return FALSE;		// not enough space
+{   
+    // used direct map entries
+    int usedDirectEntries = numSectors < DirectEntries ? numSectors : DirectEntries;
+    // used indirect map entries
+    int usedIndirectEntries = numSectors <= DirectEntries ? 0 : divRoundUp(numSectors - DirectEntries, EntriesPerSector);
+    // used entries in the last mapping indirect sector
+    int usedEntry = usedIndirectEntries == 0 ? 0 : numSectors - DirectEntries - (usedIndirectEntries - 1) * EntriesPerSector;
 
-    for (int i = 0; i < numSectors; i++)
-	dataSectors[i] = freeMap->Find();
+    if (fileSize + numBytes > MaxFileSize) {
+        printf("Too large file\n");
+        ASSERT(FALSE);
+    }
+
+    int rawSectors = divRoundUp(fileSize, SectorSize);
+    int backup = rawSectors;
+    int totalSectors = rawSectors;
+
+    if (rawSectors > DirectEntries - usedDirectEntries) {
+        rawSectors -= DirectEntries - usedDirectEntries;
+        if (usedIndirectEntries == 0 || rawSectors > EntriesPerSector - usedEntry) {
+            rawSectors -= EntriesPerSector - usedEntry;
+            totalSectors += divRoundUp(rawSectors, EntriesPerSector);
+        }
+    }
+
+    rawSectors = backup;
+
+    if (totalSectors > freeMap->NumClear()) return FALSE;
+
+    int *buf = new int[EntriesPerSector];
+
+    if (usedIndirectEntries == 0) {
+        for (int i = usedDirectEntries; rawSectors && i < DirectEntries; i++) {
+            dataSectors[i] = freeMap->Find();
+   //         printf("$%d\n", dataSectors[i]);
+            rawSectors--;
+        }
+    } else { 
+        synchDisk->ReadSector(dataSectors[DirectEntries + usedIndirectEntries - 1], (char*)buf);
+        for (int i = usedEntry; rawSectors && i < EntriesPerSector; i++) {
+            buf[i] = freeMap->Find();
+  //          printf("$%d\n", buf[i]);
+            rawSectors--;
+        }
+        synchDisk->WriteSector(dataSectors[DirectEntries + usedIndirectEntries - 1], (char*)buf);
+    }
+    if (rawSectors > 0) {
+        for (int i = DirectEntries + usedIndirectEntries; rawSectors && i < NumEntries; i++) {
+            dataSectors[i] = freeMap->Find();
+//            printf("#%d\n", dataSectors[i]);
+            for (int j = 0; rawSectors && j < EntriesPerSector; j++) {
+                buf[j] = freeMap->Find();
+ //               printf("$%d\n", buf[j]);
+                rawSectors--;
+            }
+            synchDisk->WriteSector(dataSectors[i], (char*)buf);
+        }
+    }
+
+    rawSectors = backup;
+
+    numSectors += rawSectors;
+
     return TRUE;
 }
 
@@ -61,9 +116,15 @@ FileHeader::Allocate(BitMap *freeMap, int fileSize)
 void 
 FileHeader::Deallocate(BitMap *freeMap)
 {
-    for (int i = 0; i < numSectors; i++) {
-	ASSERT(freeMap->Test((int) dataSectors[i]));  // ought to be marked!
-	freeMap->Clear((int) dataSectors[i]);
+    int firstLevel= 0;
+    if (numSectors <= DirectEntries) 
+        firstLevel = numSectors;
+    else
+        firstLevel = DirectEntries + divRoundUp((numSectors - DirectEntries), EntriesPerSector);
+    for (int i = 0; i < firstLevel; i++) {
+        //printf(">>= %d\n", (int) dataSectors[i]);
+        ASSERT(freeMap->Test((int) dataSectors[i]));  // ought to be marked!
+        freeMap->Clear((int) dataSectors[i]);
     }
 }
 
@@ -107,6 +168,23 @@ int
 FileHeader::ByteToSector(int offset)
 {
     return(dataSectors[offset / SectorSize]);
+}
+
+// index is 0-base
+int FileHeader::GetIthSector(int index, int *cache) {
+    if (index < DirectEntries) {
+        return dataSectors[index];
+    } else {
+        int *buf = new int[EntriesPerSector];
+        int which = DirectEntries + divRoundUp((index - DirectEntries + 1), EntriesPerSector) - 1;
+        synchDisk->ReadSector(dataSectors[which], (char*) buf);
+        int ret = buf[index - DirectEntries + 1 - (which - DirectEntries) * EntriesPerSector - 1];
+    //    for (int i = 0; i < NumEntries; i++) printf("%d,", dataSectors[i]); puts("");
+     //   printf("%d %d %d\n", buf[0], buf[1], buf[2]);
+        delete buf;
+      //  printf("index %d %d (which %d)\n", index, ret, which);
+        return ret;
+    }
 }
 
 //----------------------------------------------------------------------

@@ -14,3 +14,6 @@ code/test/halt
 code/test/matmult.coff
 code/vm/nachos
 
+DISK
+filesys/DISK
+log
