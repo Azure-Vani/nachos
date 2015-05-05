@@ -132,13 +132,19 @@ main(int argc, char **argv)
 	    fileSystem->Remove(*(argv + 1));
 	    argCount = 2;
 	} else if (!strcmp(*argv, "-l")) {	// list Nachos directory
+        if (!strcmp(*(argv + 1), "/"))
             fileSystem->List();
+        else
+            fileSystem->List(*(argv + 1));
 	} else if (!strcmp(*argv, "-D")) {	// print entire filesystem
             fileSystem->Print();
 	} else if (!strcmp(*argv, "-t")) {	// performance test
             PerformanceTest();
 	} else if (!strcmp(*argv, "-cat")) {
         fileSystem->Cat(*(argv + 1));
+        argCount = 2;
+    } else if (!strcmp(*argv, "-mkdir")) {
+        fileSystem->Create(*(argv + 1), 0, 1);
         argCount = 2;
     }
 #endif // FILESYS

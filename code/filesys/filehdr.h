@@ -17,7 +17,7 @@
 #include "disk.h"
 #include "bitmap.h"
 
-#define NumEntries 	((SectorSize - 5 * (int)sizeof(int)) / (int)sizeof(int))
+#define NumEntries 	((SectorSize - 6 * (int)sizeof(int)) / (int)sizeof(int))
 #define DirectEntries  (NumEntries - IndirectEntries)
 #define IndirectEntries 8
 #define EntriesPerSector (SectorSize / (int)sizeof(int))
@@ -67,11 +67,20 @@ class FileHeader {
         return numSectors * SectorSize;
     }
 
-    FileHeader() : numBytes(0), numSectors(0){}
+    FileHeader(int type = 0) : type(type), numBytes(0), numSectors(0) {}
+
+    bool isDirectory(void) {return type == 1;}
+    bool isRegular(void) {return type == 0;}
+
+    void clear(void) {
+        numBytes = 0;
+    }
+
   private:
     int numBytes;			// Number of bytes in the file
     int numSectors; // allocated size
     int created, lastAccess, lastModified; // ctime, atime and mtime
+    int type; // 0 for regular file and 1 for directory
     int dataSectors[NumEntries];		// Disk sector numbers for each data 
 					// block in the file
 };
