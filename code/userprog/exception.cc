@@ -21,6 +21,8 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
+#include <string>
+
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
@@ -53,13 +55,34 @@ ExceptionHandler(ExceptionType which)
 {
     // printf("%s\n", exceptionNames[which]);
     int type = machine->ReadRegister(2);
+    int curInst = machine->ReadRegister(PCReg);
 
-    if ((which == SyscallException) && (type == SC_Halt)) {
-        DEBUG('a', "Shutdown, initiated by user program.\n");
-        interrupt->Halt();
-    } else if ((which == SyscallException) && (type == SC_Exit)) {
-        printf("%d\n", machine->ReadRegister(4));
-        currentThread->Finish();
+    if (which == SyscallException) {
+        if (type == SC_Halt) {
+            DEBUG('a', "Shutdown, initiated by user program.\n");
+            interrupt->Halt();
+        } else
+        if (type == SC_Exit) {
+            printf("Exit %d\n", machine->ReadRegister(4));
+            currentThread->Finish();
+        } else
+        if (type == SC_Create) {
+            int addr = machine->ReadRegister(4);
+            std::string fileName;
+            while (true) {
+                int c = 0;
+                while (!machine->ReadMem(addr, 1, &c));
+                if (!c) break;
+                printf("--->%d\n", c);
+                fileName += (char) c;
+                addr ++;
+            }
+            printf("%s\n", fileName.c_str());
+        } else {
+            printf("Unkonwn system call %d\n", type);
+            ASSERT(FALSE);
+        }
+        machine->WriteRegister(PCReg, curInst + 4);
     } else if (which == PageFaultException) {
         int addr = machine->ReadRegister(BadVAddrReg);
         machine->PageSwapping(addr);
@@ -67,4 +90,5 @@ ExceptionHandler(ExceptionType which)
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);
     }
+
 }
