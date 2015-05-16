@@ -26,6 +26,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
+#include "filesys.h"
 
 //----------------------------------------------------------------------
 // ExceptionHandler
@@ -50,6 +51,20 @@
 //	are in machine.h.
 //----------------------------------------------------------------------
 
+char* getString(int addr) {
+    std::string fileName;
+    while (true) {
+        int c = 0;
+        while (!machine->ReadMem(addr, 1, &c));
+        if (!c) break;
+        fileName += (char) c;
+        addr ++;
+    }
+    char *tmp = new char[fileName.length() + 1];
+    strcpy(tmp, fileName.c_str());
+    return tmp;
+}
+
 void
 ExceptionHandler(ExceptionType which)
 {
@@ -68,20 +83,69 @@ ExceptionHandler(ExceptionType which)
         } else
         if (type == SC_Create) {
             int addr = machine->ReadRegister(4);
-            std::string fileName;
-            while (true) {
-                int c = 0;
-                while (!machine->ReadMem(addr, 1, &c));
-                if (!c) break;
-                printf("--->%d\n", c);
-                fileName += (char) c;
-                addr ++;
+            char* name = getString(addr);
+            printf("create %s\n", name);
+            fileSystem->Create(name, 0, 0);
+            //delete [] name;
+        } else
+        if (type == SC_Open) {
+            int addr = machine->ReadRegister(4);
+            char* name = getString(addr);
+            printf("open %s\n", name);
+            OpenFile *ofile = fileSystem->Open(name);
+            // delete [] name;
+            if (ofile == NULL) {
+                machine->WriteRegister(2, -1);
+                goto end;
             }
-            printf("%s\n", fileName.c_str());
+            int fd = -1;
+            for (int i = 2; i < FdNumber; i++) if (currentThread->fds[i] == NULL) {
+                fd = i;
+                break;
+            }
+            if (fd == -1) {
+                printf("Run out of fd table. \n");
+                ASSERT(FALSE);
+            }
+            currentThread->fds[fd] = ofile;
+            machine->WriteRegister(2, fd);
+        } else 
+        if (type == SC_Close) {
+            int fd = machine->ReadRegister(4);
+            printf("close %d\n", fd);
+            ASSERT(currentThread->fds[fd] != NULL);
+            // delete currentThread->fds[fd];
+            currentThread->fds[fd] = NULL;
+        } else
+        if (type == SC_Write) {
+            int addr = machine->ReadRegister(4);
+            int size = machine->ReadRegister(5);
+            int fd = machine->ReadRegister(6);
+            printf("write addr %x, size %d, fd %d\n", addr, size, fd);
+            char *buf = new char[size];
+            for (int i = 0; i < size; i++) {
+                machine->ReadMem(addr + i, 1, (int*)(buf + i));
+            }
+            currentThread->fds[fd]->Write(buf, size);
+        } else 
+        if (type == SC_Read) {
+            int addr = machine->ReadRegister(4);
+            int size = machine->ReadRegister(5);
+            int fd = machine->ReadRegister(6);
+            printf("read addr %x, size %d, fd %d\n", addr, size, fd);
+            char *buf = new char[size];
+            currentThread->fds[fd]->Read(buf, size);
+            printf("read: ");
+            for (int i = 0; i < size; i++) {
+                printf("%x ", buf[i]);
+                while (!machine->WriteMem(addr + i, 1, buf[i]));
+            }
+            puts("");
         } else {
             printf("Unkonwn system call %d\n", type);
             ASSERT(FALSE);
         }
+    end:
         machine->WriteRegister(PCReg, curInst + 4);
     } else if (which == PageFaultException) {
         int addr = machine->ReadRegister(BadVAddrReg);

@@ -39,12 +39,14 @@ Thread::Thread(char* threadName)
 		mask[i] = this;
 		break;
 	}
+    for (i = 0; i < FdNumber; i++) fds[i] = NULL;
 	usedTime = 0;
 	threadId = i;
     name = threadName;
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
+    fthread = NULL;
 #ifdef USER_PROGRAM
     space = NULL;
 #endif

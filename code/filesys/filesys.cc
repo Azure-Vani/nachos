@@ -189,7 +189,7 @@ OpenFile* Recurse(Directory *directory, char *&name) {
     char *suffix;
     OpenFile * openFile = NULL, *tmp;
     while (Splite(name, suffix), strlen(suffix) > 0) {
-        if (openFile != NULL) delete openFile;
+        // if (openFile != NULL) delete openFile;
         printf("-> %s, %s <- \n", name, suffix);
         int sector = directory->Find(name);
         if (sector == -1) {

@@ -39,6 +39,7 @@
 
 #include "copyright.h"
 #include "utility.h"
+#include "filesys.h"
 
 #ifdef USER_PROGRAM
 #include "machine.h"
@@ -54,7 +55,7 @@
 // Size of the thread's private execution stack.
 // WATCH OUT IF THIS ISN'T BIG ENOUGH!!!!!
 #define StackSize	(4 * 1024)	// in words
-
+#define FdNumber 32
 
 // Thread state
 enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED };
@@ -121,6 +122,10 @@ class Thread {
 	}
 
 	void resetTime(int u) { usedTime = u; }
+
+    Thread *fthread;
+    OpenFile *fds[FdNumber];
+
   private:
     // some of the private data for this class is listed above
     
