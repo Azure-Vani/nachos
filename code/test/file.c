@@ -10,7 +10,7 @@ int main(void) {
     Read(c, 10, fd);
     Create("result");
     fd2 = Open("result");
-    if (fd2 == -2) Exit(fd2);
+    if (fd2 == -1) Exit(fd2);
     Write(c, 10, fd2);
     Write(c, 10, fd2);
     Close(fd);

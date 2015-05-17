@@ -122,8 +122,14 @@ Scheduler::Run (Thread *nextThread)
     // before now (for example, in Thread::Finish()), because up to this
     // point, we were still running on the old thread's stack!
     if (threadToBeDestroyed != NULL) {
+        if (threadToBeDestroyed->fThread != NULL) {
+            threadToBeDestroyed->fThread->removeChild(threadToBeDestroyed);
+        }
+        for (int i = 0; i < threadToBeDestroyed->childThreads.size(); i++) {
+            threadToBeDestroyed->childThreads[i]->fThread = NULL;
+        }
         delete threadToBeDestroyed;
-	threadToBeDestroyed = NULL;
+        threadToBeDestroyed = NULL;
     }
     
 #ifdef USER_PROGRAM

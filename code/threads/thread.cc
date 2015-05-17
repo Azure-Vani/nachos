@@ -35,18 +35,18 @@
 Thread::Thread(char* threadName)
 {
 	int i;
+    for (i = 0; i < FdNumber; i++) fds[i] = NULL;
 	for (i = 0; i < 128; i++) if (!mask[i]) {
 		mask[i] = this;
 		break;
 	}
-    for (i = 0; i < FdNumber; i++) fds[i] = NULL;
-	usedTime = 0;
 	threadId = i;
+	usedTime = 0;
     name = threadName;
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
-    fthread = NULL;
+    fThread = NULL;
 #ifdef USER_PROGRAM
     space = NULL;
 #endif
@@ -75,6 +75,18 @@ Thread::~Thread()
 #ifdef USER_PROGRAM
     if (space) delete space;
 #endif
+}
+
+void Thread::removeChild(Thread *child) {
+    std::vector<Thread*>::iterator which = childThreads.end();
+    for (__typeof(which) it = childThreads.begin(); it != childThreads.end(); it++) {
+        if (*it == child) {
+            which = it;
+            break;
+        }
+    }
+    ASSERT(which != childThreads.end());
+    childThreads.erase(which);
 }
 
 //----------------------------------------------------------------------
@@ -167,6 +179,9 @@ Thread::Finish ()
     
     DEBUG('t', "Finishing thread \"%s\"\n", getName());
     
+    for (int i = 0; i < currentThread->waiters.size(); i++) {
+        scheduler->ReadyToRun(currentThread->waiters[i]);
+    }
     threadToBeDestroyed = currentThread;
     Sleep();					// invokes SWITCH
     // not reached

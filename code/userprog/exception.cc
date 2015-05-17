@@ -28,6 +28,19 @@
 #include "syscall.h"
 #include "filesys.h"
 
+void StartProcess(char *filename);
+
+static void dummyRun(int addr) {
+    currentThread->RestoreUserState();
+    machine->WriteRegister(PCReg, addr);
+    machine->WriteRegister(NextPCReg, addr + 4);
+    machine->Run();
+}
+
+static void dummyStartProg(int name) {
+    StartProcess((char*)name);
+}
+
 //----------------------------------------------------------------------
 // ExceptionHandler
 // 	Entry point into the Nachos kernel.  Called when a user program
@@ -65,6 +78,16 @@ char* getString(int addr) {
     return tmp;
 }
 
+Thread* MyFork(VoidFunctionPtr func, int param) {
+    Thread *t = new Thread("another");
+    t->fThread = currentThread;
+    currentThread->childThreads.push_back(t);
+    t->space = new AddrSpace(currentThread->space);
+    t->SaveUserState();
+    t->Fork(func, param);
+    return t;
+}
+
 void
 ExceptionHandler(ExceptionType which)
 {
@@ -86,14 +109,14 @@ ExceptionHandler(ExceptionType which)
             char* name = getString(addr);
             printf("create %s\n", name);
             fileSystem->Create(name, 0, 0);
-            //delete [] name;
+            delete [] name;
         } else
         if (type == SC_Open) {
             int addr = machine->ReadRegister(4);
             char* name = getString(addr);
             printf("open %s\n", name);
             OpenFile *ofile = fileSystem->Open(name);
-            // delete [] name;
+            delete [] name;
             if (ofile == NULL) {
                 machine->WriteRegister(2, -1);
                 goto end;
@@ -114,7 +137,7 @@ ExceptionHandler(ExceptionType which)
             int fd = machine->ReadRegister(4);
             printf("close %d\n", fd);
             ASSERT(currentThread->fds[fd] != NULL);
-            // delete currentThread->fds[fd];
+            delete currentThread->fds[fd];
             currentThread->fds[fd] = NULL;
         } else
         if (type == SC_Write) {
@@ -124,9 +147,16 @@ ExceptionHandler(ExceptionType which)
             printf("write addr %x, size %d, fd %d\n", addr, size, fd);
             char *buf = new char[size];
             for (int i = 0; i < size; i++) {
-                machine->ReadMem(addr + i, 1, (int*)(buf + i));
+                int tmp;
+                machine->ReadMem(addr + i, 1, &tmp);
+                buf[i] = tmp;
             }
-            currentThread->fds[fd]->Write(buf, size);
+            if (fd != 1)
+                currentThread->fds[fd]->Write(buf, size);
+            else {
+                for (int i = 0; i < size; i++)
+                    putchar(buf[i]);
+            }
         } else 
         if (type == SC_Read) {
             int addr = machine->ReadRegister(4);
@@ -141,12 +171,42 @@ ExceptionHandler(ExceptionType which)
                 while (!machine->WriteMem(addr + i, 1, buf[i]));
             }
             puts("");
+        } else
+        if (type == SC_Fork) {
+            int addr = machine->ReadRegister(4);
+            MyFork(dummyRun, addr);
+            printf("Forked\n");
+        } else
+        if (type == SC_Exec) {
+            int addr = machine->ReadRegister(4);
+            char *name = getString(addr);
+            Thread *t = MyFork(dummyStartProg, (int)name);
+            machine->WriteRegister(2, t->getThreadId());
+        } else
+        if (type == SC_Yield) {
+            currentThread->Yield();
+        } else 
+        if (type == SC_Join) {
+            int id = machine->ReadRegister(4);
+            Thread *waitee = NULL;
+            for (int i = 0; i < currentThread->childThreads.size(); i++) {
+                if (currentThread->childThreads[i]->getThreadId() == id) {
+                    waitee = currentThread->childThreads[i];
+                }
+            }
+            if (waitee != NULL) {
+                waitee->waiters.push_back(currentThread);
+                IntStatus oldLevel = interrupt->SetLevel(IntOff);
+                currentThread->Sleep();
+                interrupt->SetLevel(oldLevel);
+            }
         } else {
             printf("Unkonwn system call %d\n", type);
             ASSERT(FALSE);
         }
     end:
         machine->WriteRegister(PCReg, curInst + 4);
+        machine->WriteRegister(NextPCReg, curInst + 8);
     } else if (which == PageFaultException) {
         int addr = machine->ReadRegister(BadVAddrReg);
         machine->PageSwapping(addr);
@@ -154,5 +214,4 @@ ExceptionHandler(ExceptionType which)
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);
     }
-
 }

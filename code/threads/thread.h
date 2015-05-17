@@ -37,6 +37,10 @@
 #ifndef THREAD_H
 #define THREAD_H
 
+#include <vector>
+
+class Lock;
+
 #include "copyright.h"
 #include "utility.h"
 #include "filesys.h"
@@ -123,9 +127,13 @@ class Thread {
 
 	void resetTime(int u) { usedTime = u; }
 
-    Thread *fthread;
+    void removeChild(Thread *child);
+
+    Thread *fThread;
+    std::vector<Thread*> childThreads;
     OpenFile *fds[FdNumber];
 
+    std::vector<Thread*> waiters;
   private:
     // some of the private data for this class is listed above
     

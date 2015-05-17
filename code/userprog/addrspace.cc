@@ -119,6 +119,12 @@ AddrSpace::~AddrSpace()
    delete pageTable;
 }
 
+AddrSpace::AddrSpace (AddrSpace *oth) {
+    *this = *oth;
+    pageTable = new TranslationEntry[PhysPagesPerThread];
+    memcpy(pageTable, oth->pageTable, sizeof (TranslationEntry[PhysPagesPerThread]));
+}
+
 //----------------------------------------------------------------------
 // AddrSpace::InitRegisters
 // 	Set the initial values for the user-level register set.

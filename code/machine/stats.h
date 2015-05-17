@@ -49,7 +49,7 @@ class Statistics {
 // in the kernel measured by the number of calls to enable interrupts,
 // these time constants are none too exact.
 
-#define UserTick 	1	// advance for each user-level instruction 
+#define UserTick 	100	// advance for each user-level instruction 
 #define SystemTick 	200 	// advance each time interrupts are enabled
 #define RotationTime 	500 	// time disk takes to rotate one sector
 #define SeekTime 	500    	// time disk takes to seek past one track
